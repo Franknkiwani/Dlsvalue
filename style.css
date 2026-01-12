@@ -1,1 +1,84 @@
-hi
+/* --- Core Animations --- */
+@keyframes shimmer { 
+    0% { background-position: -200% 0; } 
+    100% { background-position: 200% 0; } 
+}
+
+@keyframes scroll { 
+    0% { transform: translateX(0); } 
+    100% { transform: translateX(-50%); } 
+}
+
+@keyframes slideUp { 
+    from { transform: translateY(100px); opacity: 0; } 
+    to { transform: translateY(0); opacity: 1; } 
+}
+
+/* --- UI Classes --- */
+.skeleton { 
+    background: linear-gradient(90deg, #111 25%, #222 50%, #111 75%); 
+    background-size: 200% 100%; 
+    animation: shimmer 1.5s infinite linear; 
+}
+
+.ticker-track { 
+    display: flex; 
+    width: max-content; 
+    animation: scroll 25s linear infinite; 
+}
+
+.toast { 
+    animation: slideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; 
+}
+
+.glass { 
+    background: rgba(255, 255, 255, 0.03); 
+    backdrop-filter: blur(20px); 
+    -webkit-backdrop-filter: blur(20px); 
+}
+
+.glass-dark { 
+    background: rgba(0, 0, 0, 0.85); 
+    backdrop-filter: blur(25px); 
+    -webkit-backdrop-filter: blur(25px); 
+}
+
+.hero-bg-stadium {
+    background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), 
+                url('https://png.pngtree.com/thumb_back/fh260/background/20220506/pngtree-soccer-stadium-perspective-background-with-green-lawn-and-white-gates-image_1146798.jpg');
+    background-size: cover; 
+    background-position: center;
+}
+
+/* --- Scrollbar & Body Locks --- */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+body.modal-open { 
+    overflow: hidden; 
+    height: 100vh; 
+}
+
+/* --- Profile & Token UI --- */
+#status-badge.free {
+    background-color: #8B4513; /* Brown */
+    color: white;
+}
+
+#status-badge.pro {
+    background-color: #D4AF37; /* Gold */
+    color: black;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+#user-avatar {
+    transition: transform 0.3s ease;
+}
+
+#user-avatar:hover {
+    transform: scale(1.1);
+}
+
+#token-count {
+    font-variant-numeric: tabular-nums;
+}
