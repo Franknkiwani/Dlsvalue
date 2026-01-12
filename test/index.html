@@ -2,350 +2,50 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>DLS Value | AI Squad Appraisal</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>GitHub File Reader</title>
     <style>
-        /* Core System Animations */
-        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-        .skeleton { background: linear-gradient(90deg, #111 25%, #222 50%, #111 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite linear; }
-        
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
-        .glass-dark { background: rgba(15, 15, 15, 0.98); backdrop-filter: blur(30px); }
-        
-        .hero-bg-stadium {
-            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://png.pngtree.com/thumb_back/fh260/background/20220506/pngtree-soccer-stadium-perspective-background-with-green-lawn-and-white-gates-image_1146798.jpg');
-            background-size: cover; background-position: center;
-        }
-
-        /* Modal Styles */
-        .token-card { background: #1A1A1A; border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .token-card.active { border-color: #F59E0B; background: rgba(245, 158, 11, 0.08); transform: scale(1.02); }
-
-        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .animate-up { animation: slideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-        
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        body.modal-open { overflow: hidden; height: 100vh; }
+        body { font-family: monospace; background: #1e1e1e; color: #d4d4d4; padding: 20px; }
+        pre { background: #2d2d2d; padding: 15px; border-radius: 5px; overflow-x: auto; border: 1px solid #444; }
+        h2 { color: #4ec9b0; border-bottom: 1px solid #444; padding-bottom: 10px; }
+        .loading { color: #ce9178; }
     </style>
 </head>
-<body class="bg-black text-white antialiased select-none overflow-x-hidden">
+<body>
 
-    <div id="toast-container" class="fixed bottom-10 left-0 w-full flex flex-col items-center z-[5000] pointer-events-none px-6"></div>
+    <h2>Source: index.html</h2>
+    <pre id="index-code" class="loading">Fetching index.html...</pre>
 
-    <header class="fixed top-0 left-0 w-full h-[70px] z-50 glass border-b border-white/10 flex justify-center">
-        <div class="w-full max-w-[500px] flex items-center justify-between px-5">
-            <img src="https://i.imgur.com/D2or3C4.png" alt="Logo" class="h-8 w-auto">
-            
-            <div id="auth-ui-wrapper">
-                <button id="header-auth-btn" onclick="toggleModal('auth-modal', true)" class="glass border border-white/20 px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all">
-                    Login
-                </button>
+    <h2>Source: style.css</h2>
+    <pre id="css-code" class="loading">Fetching style.css...</pre>
 
-                <div id="user-profile-hub" class="hidden flex items-center gap-3 cursor-pointer" onclick="toggleModal('profile-overlay', true)">
-                    <div class="flex flex-col items-end">
-                        <div class="flex items-center gap-2">
-                            <span id="display-username" class="text-[10px] font-black uppercase tracking-tighter">Guest</span>
-                            <span id="status-badge" class="text-[7px] px-1.5 py-0.5 rounded font-black uppercase tracking-widest bg-amber-900/30 text-amber-500 border border-amber-500/20">FREE</span>
-                        </div>
-                        <span id="token-count-header" class="text-[9px] font-bold text-neutral-400">50 Tokens</span>
-                    </div>
-                    <div class="w-9 h-9 rounded-full border-2 border-white/10 overflow-hidden bg-neutral-900 shadow-xl">
-                        <img id="user-avatar" src="" class="w-full h-full object-cover">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <main class="pt-[90px] w-full max-w-[500px] mx-auto flex flex-col items-center">
-        <div id="main-skeleton" class="w-[92%] aspect-video mt-5 skeleton rounded-[24px]"></div>
-        
-        <div id="hero-content" class="hidden w-full flex flex-col items-center px-4 animate-up">
-            <section class="w-full aspect-video hero-bg-stadium flex flex-col items-center justify-center text-center rounded-[32px] border border-white/10 shadow-2xl relative">
-                <h1 class="text-4xl font-black italic uppercase tracking-tighter leading-none mb-2">AI SQUAD VALUE</h1>
-                <p class="text-[10px] uppercase font-bold text-neutral-400 tracking-[0.4em] mb-8">Next-Gen Appraisal Engine</p>
-                <div onclick="document.getElementById('file-input').click()" class="bg-white text-black px-12 py-4 rounded-full font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all cursor-pointer">
-                    Appraise Squad
-                </div>
-                <input type="file" id="file-input" class="hidden" accept="image/*">
-            </section>
-        </div>
-    </main>
-
-    <div id="auth-modal" class="fixed inset-0 z-[2000] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-        <div class="w-full max-w-[380px] glass-dark border border-white/10 rounded-[40px] p-8 relative animate-up">
-            <button onclick="toggleModal('auth-modal', false)" class="absolute top-6 right-6 text-neutral-500">✕</button>
-            <div class="space-y-4 pt-4">
-                <button id="google-login-btn" class="w-full bg-white text-black font-black py-4 rounded-xl text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all">Google Sign In</button>
-                <input type="email" id="auth-email" placeholder="Email Address" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:border-amber-500 outline-none">
-                <input type="password" id="auth-password" placeholder="Password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:border-amber-500 outline-none">
-                <button id="auth-submit-btn" class="w-full border border-white/20 text-white font-black py-4 rounded-xl text-[10px] uppercase tracking-widest active:scale-95 transition-all">Continue</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="profile-overlay" class="fixed inset-0 z-[2000] hidden flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl">
-        <div class="w-full max-w-[420px] glass-dark border border-white/10 rounded-[44px] overflow-hidden flex flex-col animate-up shadow-2xl relative">
-            
-            <div id="profile-view-main" class="p-8 space-y-8 overflow-y-auto max-h-[85vh] no-scrollbar">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h2 id="overlay-username" class="text-xl font-black uppercase tracking-tighter text-white italic">...</h2>
-                        <p id="tier-text" class="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mt-1">Free Tier • 50 Daily Tokens</p>
-                    </div>
-                    <button onclick="toggleModal('profile-overlay', false)" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white">✕</button>
-                </div>
-
-                <div class="glass border border-amber-500/30 p-6 rounded-[32px] space-y-4 bg-amber-500/5 relative overflow-hidden">
-                    <div class="flex justify-between items-center">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-amber-500">Subscription</span>
-                        <span class="text-xs font-black text-white">$4.99/mo</span>
-                    </div>
-                    <p class="text-[9px] text-neutral-400 leading-relaxed">Upgrade to **PRO** for 250 daily tokens, priority queueing, and early access to full-bench scans.</p>
-                    <button onclick="notify('Pro Checkout Opening...')" class="w-full bg-amber-500 text-black font-black py-4 rounded-2xl text-[10px] uppercase tracking-[0.2em] active:scale-95 transition-all">Get Pro Membership</button>
-                </div>
-
-                <div class="space-y-3">
-                    <p class="text-[9px] font-black text-neutral-600 uppercase tracking-widest px-2">One-Time Refill</p>
-                    <button onclick="switchView('refill')" class="w-full bg-white/5 border border-white/10 p-5 rounded-[28px] flex items-center justify-between active:scale-95 transition-all group">
-                        <div class="text-left">
-                            <span class="text-[10px] font-black uppercase tracking-widest text-white">Buy Extra Tokens</span>
-                            <p class="text-[8px] text-neutral-500 mt-1">Tokens do not expire</p>
-                        </div>
-                        <span class="text-neutral-500 group-hover:text-white transition-colors text-lg">→</span>
-                    </button>
-                </div>
-
-                <div class="pt-6 border-t border-white/5 flex flex-col gap-4">
-                     <button onclick="logoutUser()" class="w-full text-center py-4 text-[10px] font-black uppercase tracking-[0.3em] text-neutral-500 hover:text-white transition-all">Sign Out</button>
-                     <button onclick="deleteAccount()" class="text-[8px] font-black uppercase tracking-widest text-red-900/50 hover:text-red-500 transition-all">Delete My Account Permanently</button>
-                </div>
-            </div>
-
-            <div id="profile-view-refill" class="hidden p-8 space-y-6 animate-up">
-                <div class="flex items-center justify-between mb-2">
-                    <button onclick="switchView('main')" class="text-[10px] font-black uppercase tracking-widest text-neutral-500 flex items-center gap-1">← Back</button>
-                    <div class="text-right">
-                        <h3 class="text-xl font-black italic uppercase italic leading-none">REFILL TOKENS</h3>
-                        <p class="text-[8px] font-bold text-neutral-600 uppercase tracking-widest mt-1 leading-none">Select a one-time credit pack</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div onclick="selectPack(this, 30)" class="token-card p-5 rounded-[32px] text-center cursor-pointer active:scale-95">
-                        <p class="text-[8px] font-black text-neutral-500 uppercase tracking-widest mb-1">Starter</p>
-                        <p class="text-2xl font-black">30</p>
-                        <p class="text-[8px] font-bold text-neutral-400 uppercase tracking-widest mb-4">Tokens</p>
-                        <div class="bg-amber-500 text-black py-2 rounded-xl text-[10px] font-black">$3.00</div>
-                    </div>
-                    <div onclick="selectPack(this, 50)" class="token-card p-5 rounded-[32px] text-center cursor-pointer active:scale-95">
-                        <p class="text-[8px] font-black text-neutral-500 uppercase tracking-widest mb-1">Popular</p>
-                        <p class="text-2xl font-black">50</p>
-                        <p class="text-[8px] font-bold text-neutral-400 uppercase tracking-widest mb-4">Tokens</p>
-                        <div class="bg-amber-500 text-black py-2 rounded-xl text-[10px] font-black">$5.00</div>
-                    </div>
-                    <div onclick="selectPack(this, 100)" class="token-card p-5 rounded-[32px] text-center cursor-pointer active:scale-95">
-                        <p class="text-[8px] font-black text-neutral-500 uppercase tracking-widest mb-1">Pro</p>
-                        <p class="text-2xl font-black">100</p>
-                        <p class="text-[8px] font-bold text-neutral-400 uppercase tracking-widest mb-4">Tokens</p>
-                        <div class="bg-amber-500 text-black py-2 rounded-xl text-[10px] font-black">$10.00</div>
-                    </div>
-                    <div onclick="selectPack(this, 250)" class="token-card p-5 rounded-[32px] text-center cursor-pointer active:scale-95 relative border-amber-500/20">
-                        <span class="absolute -top-2 right-4 bg-amber-500 text-black text-[7px] font-black px-2 py-0.5 rounded-full uppercase italic">Best Value</span>
-                        <p class="text-[8px] font-black text-neutral-500 uppercase tracking-widest mb-1">Whale</p>
-                        <p class="text-2xl font-black">250</p>
-                        <p class="text-[8px] font-bold text-neutral-400 uppercase tracking-widest mb-4">Tokens</p>
-                        <div class="bg-amber-500 text-black py-2 rounded-xl text-[10px] font-black">$25.00</div>
-                    </div>
-                </div>
-
-             <div class="space-y-3 pt-4 border-t border-white/5">
-    <div id="paypal-button-container" class="w-full min-h-[50px]"></div>
-    <button onclick="processPayment('Card')" class="w-full bg-neutral-800 py-4 rounded-[24px] flex items-center justify-center active:scale-95 border border-white/10 group">
-        <span class="text-[10px] font-black uppercase text-white tracking-widest">Debit or Credit Card</span>
-    </button>
-</div>
-
-            </div>
-        </div>
-    </div>
-<script src="https://www.paypal.com/sdk/js?client-id=AfXk_z28SNb8Y5UnVkPxlVzagVFkmWpgsAPOf4O0zyiu-oCR2hfB0l5i6zDhaxc1IQR35vRkL8mzgWbh&currency=USD"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script>
-    // --- FIREBASE INITIALIZATION ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-        authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-        projectId: "itzhoyoo-f9f7e",
-        storageBucket: "itzhoyoo-f9f7e.filestorage.app",
-        appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    // --- SET YOUR DETAILS HERE ---
+    const USER = 'YOUR_GITHUB_USERNAME';
+    const REPO = 'YOUR_REPO_NAME';
 
-    let currentTokens = 50;
-    let selectedAmount = 0;
-    let paypalButtonsInstance = null;
-
-    // --- UI CORE LOGIC ---
-    function toggleModal(id, show) {
-        const modal = document.getElementById(id);
-        if (modal) {
-            modal.classList.toggle('hidden', !show);
-            document.body.classList.toggle('modal-open', show);
-            if(!show) switchView('main');
-        }
-    }
-
-    function switchView(view) {
-        const main = document.getElementById('profile-view-main');
-        const refill = document.getElementById('profile-view-refill');
-        if(view === 'refill') {
-            main.classList.add('hidden');
-            refill.classList.remove('hidden');
-        } else {
-            main.classList.remove('hidden');
-            refill.classList.add('hidden');
-        }
-    }
-
-    function notify(msg) {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        toast.className = 'glass border border-white/20 px-8 py-4 rounded-3xl text-[10px] font-black uppercase tracking-widest mb-3 text-white shadow-2xl animate-up';
-        toast.innerText = msg;
-        container.appendChild(toast);
-        setTimeout(() => { 
-            toast.style.opacity = '0'; 
-            setTimeout(() => toast.remove(), 500); 
-        }, 3000);
-    }
-
-    // --- PAYPAL & TOKEN LOGIC ---
-    function selectPack(el, amount, price) {
-        // UI Selection
-        document.querySelectorAll('.token-card').forEach(c => c.classList.remove('active'));
-        el.classList.add('active');
+    async function getFileContent(filePath, elementId) {
+        const url = `https://api.github.com/repos/${USER}/${REPO}/contents/${filePath}`;
         
-        selectedAmount = amount;
-        notify(`Selected: ${amount} Tokens ($${price})`);
-        
-        // Initialize PayPal for this specific price
-        initPayPal(price, amount);
-    }
-
-    function initPayPal(price, tokenAmount) {
-        const container = document.getElementById('paypal-button-container');
-        container.innerHTML = ''; // Clear previous button
-
-        paypal.Buttons({
-            style: {
-                layout: 'vertical',
-                color:  'gold',
-                shape:  'pill',
-                label:  'paypal'
-            },
-            createOrder: (data, actions) => {
-                return actions.order.create({
-                    purchase_units: [{
-                        description: `${tokenAmount} DLS Tokens`,
-                        amount: { value: price.toString() }
-                    }]
-                });
-            },
-            onApprove: (data, actions) => {
-                return actions.order.capture().then(details => {
-                    currentTokens += tokenAmount;
-                    document.getElementById('token-count-header').innerText = `${currentTokens} Tokens`;
-                    notify(`Payment Success! Added ${tokenAmount} Tokens.`);
-                    toggleModal('profile-overlay', false);
-                });
-            },
-            onError: (err) => {
-                notify("Payment Error - Try Again");
-                console.error(err);
-            }
-        }).render('#paypal-button-container');
-    }
-
-    // --- FIREBASE OBSERVER ---
-    auth.onAuthStateChanged((user) => {
-        const authBtn = document.getElementById('header-auth-btn');
-        const profileHub = document.getElementById('user-profile-hub');
-        
-        if (user) {
-            authBtn.classList.add('hidden');
-            profileHub.classList.remove('hidden');
-            
-            const name = user.displayName || user.email.split('@')[0];
-            document.getElementById('display-username').innerText = name;
-            document.getElementById('overlay-username').innerText = name;
-            document.getElementById('user-avatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${user.email}&background=111&color=fff`;
-        } else {
-            authBtn.classList.remove('hidden');
-            profileHub.classList.add('hidden');
-        }
-    });
-
-    // --- AUTH ACTIONS ---
-    document.getElementById('google-login-btn').onclick = () => {
-        auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
-            .then(() => toggleModal('auth-modal', false))
-            .catch(err => notify(err.message));
-    };
-
-    document.getElementById('auth-submit-btn').onclick = () => {
-        const email = document.getElementById('auth-email').value;
-        const pass = document.getElementById('auth-password').value;
-        if(!email || !pass) return notify("Enter Email and Password");
-        
-        auth.signInWithEmailAndPassword(email, pass)
-            .then(() => toggleModal('auth-modal', false))
-            .catch(() => {
-                // If login fails, try to register
-                auth.createUserWithEmailAndPassword(email, pass)
-                    .then(() => toggleModal('auth-modal', false))
-                    .catch(err => notify(err.message));
-            });
-    };
-
-    function logoutUser() {
-        if(confirm("Logout of session?")) {
-            auth.signOut().then(() => {
-                toggleModal('profile-overlay', false);
-                notify("Logged Out");
-            });
-        }
-    }
-
-    async function deleteAccount() {
-        const user = auth.currentUser; 
-        if(!user) return;
-        const pass = prompt("Confirm Account Deletion with password:");
-        if(!pass) return;
-
-        const cred = firebase.auth.EmailAuthProvider.credential(user.email, pass);
         try {
-            await user.reauthenticateWithCredential(cred);
-            if(confirm("FINAL WARNING: All tokens and history will be lost. Delete?")) {
-                await user.delete();
-                toggleModal('profile-overlay', false);
-                notify("Account Erased");
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.content) {
+                // GitHub sends content in Base64; atob() decodes it to a string
+                const decodedContent = atob(data.content.replace(/\n/g, ''));
+                document.getElementById(elementId).textContent = decodedContent;
+            } else {
+                document.getElementById(elementId).textContent = "File not found.";
             }
-        } catch (e) { notify("Incorrect Password"); }
+        } catch (error) {
+            document.getElementById(elementId).textContent = "Error loading file.";
+        }
     }
 
-    // --- PAGE LOAD ---
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            document.getElementById('main-skeleton').classList.add('hidden');
-            document.getElementById('hero-content').classList.remove('hidden');
-        }, 1500);
-    });
+    // Run the functions
+    getFileContent('index.html', 'index-code');
+    getFileContent('style.css', 'css-code');
 </script>
-
 
 </body>
 </html>
