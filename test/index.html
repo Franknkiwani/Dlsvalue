@@ -2,49 +2,68 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GitHub File Reader</title>
+    <title>GitHub File Viewer</title>
     <style>
-        body { font-family: monospace; background: #1e1e1e; color: #d4d4d4; padding: 20px; }
-        pre { background: #2d2d2d; padding: 15px; border-radius: 5px; overflow-x: auto; border: 1px solid #444; }
-        h2 { color: #4ec9b0; border-bottom: 1px solid #444; padding-bottom: 10px; }
-        .loading { color: #ce9178; }
+        body { font-family: 'Courier New', monospace; background: #121212; color: #e0e0e0; padding: 20px; line-height: 1.5; }
+        .container { max-width: 900px; margin: auto; }
+        pre { background: #1e1e1e; padding: 15px; border-radius: 8px; border: 1px solid #333; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; }
+        .filename { color: #569cd6; font-size: 1.2em; margin-top: 30px; font-weight: bold; }
+        .error { color: #f44747; background: #2d0000; padding: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
 
-    <h2>Source: index.html</h2>
-    <pre id="index-code" class="loading">Fetching index.html...</pre>
+<div class="container">
+    <div id="status-msg"></div>
+    
+    <div class="filename">📄 index.html</div>
+    <pre id="index-display">Loading...</pre>
 
-    <h2>Source: style.css</h2>
-    <pre id="css-code" class="loading">Fetching style.css...</pre>
+    <div class="filename">🎨 style.css</div>
+    <pre id="css-display">Loading...</pre>
+</div>
 
 <script>
-    // --- SET YOUR DETAILS HERE ---
-    const USER = 'YOUR_GITHUB_USERNAME';
-    const REPO = 'YOUR_REPO_NAME';
-
-    async function getFileContent(filePath, elementId) {
-        const url = `https://api.github.com/repos/${USER}/${REPO}/contents/${filePath}`;
+    async function loadRepoFiles() {
+        // 1. AUTOMATICALLY GET USER AND REPO FROM THE URL
+        // Example: https://username.github.io/reponame/
+        const pathParts = window.location.pathname.split('/').filter(p => p);
+        const hostParts = window.location.hostname.split('.');
         
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
+        const USER = hostParts[0]; 
+        const REPO = pathParts[0]; 
 
-            if (data.content) {
-                // GitHub sends content in Base64; atob() decodes it to a string
-                const decodedContent = atob(data.content.replace(/\n/g, ''));
-                document.getElementById(elementId).textContent = decodedContent;
-            } else {
-                document.getElementById(elementId).textContent = "File not found.";
-            }
-        } catch (error) {
-            document.getElementById(elementId).textContent = "Error loading file.";
+        if (!REPO || hostParts[1] !== 'github') {
+            document.getElementById('status-msg').innerHTML = 
+                `<p class="error">⚠️ Error: This page must be hosted on <b>GitHub Pages</b> to auto-detect the repo.</p>`;
+            return;
         }
+
+        async function fetchFile(fileName, elementId) {
+            // We try 'main' first, then 'master' if it fails
+            const branches = ['main', 'master'];
+            let content = null;
+
+            for (let branch of branches) {
+                const url = `https://api.github.com/repos/${USER}/${REPO}/contents/${fileName}?ref=${branch}`;
+                try {
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const data = await response.json();
+                        content = atob(data.content.replace(/\n/g, ''));
+                        break; 
+                    }
+                } catch (e) { continue; }
+            }
+
+            document.getElementById(elementId).textContent = content || `File "${fileName}" not found in main or master branch.`;
+        }
+
+        fetchFile('index.html', 'index-display');
+        fetchFile('style.css', 'css-display');
     }
 
-    // Run the functions
-    getFileContent('index.html', 'index-code');
-    getFileContent('style.css', 'css-code');
+    loadRepoFiles();
 </script>
 
 </body>
