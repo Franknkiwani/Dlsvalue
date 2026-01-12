@@ -4,20 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="dark">
-    <title>Clean Dark App</title>
+    <title>Dark App</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <header>
-        <div class="btn-wrapper" onclick="toggleModal()">
-            <button class="login-trigger">Get Started</button>
+        <div class="btn-wrapper" id="open-auth">
+            <button class="login-trigger">Login</button>
         </div>
     </header>
 
     <div id="login-modal">
         <div class="auth-card">
-            <span class="close-btn" onclick="toggleModal()">✕</span>
+            <span class="close-btn" id="close-modal">✕</span>
             <h2 id="auth-title">Sign In</h2>
 
             <div id="register-fields" style="display: none;">
@@ -28,14 +28,14 @@
                 <input type="text" placeholder="Username Handle" id="username">
             </div>
 
-            <input type="email" placeholder="Email Address">
-            <input type="password" placeholder="Password">
+            <input type="email" placeholder="Email Address" id="email-input">
+            <input type="password" placeholder="Password" id="password-input">
             
-            <a class="forgot-link" id="forgot-pass" onclick="resetFlow()">Forgot password?</a>
+            <a class="forgot-link" id="forgot-pass">Forgot password?</a>
 
             <button class="submit-btn" id="main-btn">Continue</button>
 
-            <div style="margin: 15px 0; font-size: 0.7rem; color: #444;">OR</div>
+            <div style="margin: 15px 0; font-size: 0.7rem; color: #444; text-align: center;">OR</div>
 
             <button class="google-btn">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" alt="Google">
@@ -43,7 +43,7 @@
             </button>
 
             <p class="toggle-link" id="toggle-text">
-                Don't have an account? <span onclick="switchAuth()">Sign Up</span>
+                Don't have an account? <span id="switch-to-reg">Sign Up</span>
             </p>
         </div>
     </div>
@@ -51,7 +51,6 @@
     <div id="app"></div>
 
     <script type="module" src="firebase.js"></script>
-    
     <script type="module" src="script.js"></script>
 </body>
 </html>
