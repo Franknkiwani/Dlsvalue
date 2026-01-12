@@ -1,153 +1,88 @@
-// FIREBASE INITIALIZATION
-const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.filestorage.app",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+import { db } from './firebase.js'; // Assuming you exported db from firebase.js
+import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword, 
+    googleAuthProvider, 
+    signInWithPopup,
+    sendPasswordResetEmail 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const auth = getAuth();
+const provider = new googleAuthProvider();
+
+// --- SELECTORS ---
+const mainBtn = document.getElementById('main-btn');
+const googleBtn = document.querySelector('.google-btn');
+const emailInput = document.querySelector('input[type="email"]');
+const passwordInput = document.querySelector('input[type="password"]');
+const usernameInput = document.getElementById('username');
+
+// --- 1. GOOGLE LOGIN ---
+googleBtn.addEventListener('click', async () => {
+    try {
+        const result = await signInWithPopup(auth, provider);
+        console.log("User logged in via Google:", result.user);
+        window.toggleModal(); // Close modal on success
+        loadDashboard(result.user);
+    } catch (error) {
+        console.error("Google Auth Error:", error.message);
+        alert(error.message);
+    }
+});
+
+// --- 2. EMAIL/PASSWORD LOGIC (Login & Register) ---
+mainBtn.addEventListener('click', async () => {
+    const email = emailInput.value;
+    const password = passwordInput.value;
+    const isRegisterMode = document.getElementById('register-fields').style.display === 'block';
+
+    if (!email || !password) return alert("Please fill in all fields.");
+
+    try {
+        if (isRegisterMode) {
+            // REGISTER FLOW
+            const username = usernameInput.value;
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            console.log("Account Created:", userCredential.user);
+            // You can save the username to Firestore here if needed
+        } else {
+            // LOGIN FLOW
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            console.log("Logged In:", userCredential.user);
+        }
+        
+        window.toggleModal();
+        loadDashboard(auth.currentUser);
+    } catch (error) {
+        alert(error.message);
+    }
+});
+
+// --- 3. FORGOT PASSWORD ---
+window.resetFlow = async () => {
+    const email = emailInput.value;
+    if (!email) return alert("Please enter your email address first.");
+    
+    try {
+        await sendPasswordResetEmail(auth, email);
+        alert("Reset link sent! Check your inbox.");
+    } catch (error) {
+        alert(error.message);
+    }
 };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-
-let currentTokens = 50;
-let selectedAmount = 0;
-
-// --- UI CORE LOGIC ---
-function toggleModal(id, show) {
-    const modal = document.getElementById(id);
-    if (!modal) return;
-    modal.classList.toggle('hidden', !show);
-    document.body.classList.toggle('modal-open', show);
-    if (!show) switchView('main');
+// --- 4. SUCCESS DASHBOARD ---
+function loadDashboard(user) {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <div style="text-align: center; animation: slideUp 0.8s ease;">
+            <h1>Welcome back, ${user.displayName || 'User'}</h1>
+            <p style="color: #a1a1aa;">Your secure session is active.</p>
+            <div class="auth-card" style="margin: 20px auto; max-width: 300px;">
+                <p>Status: Authenticated</p>
+                <button class="submit-btn" onclick="location.reload()">Sign Out</button>
+            </div>
+        </div>
+    `;
 }
-
-function switchView(view) {
-    const main = document.getElementById('profile-view-main');
-    const refill = document.getElementById('profile-view-refill');
-    if (view === 'refill') {
-        main.classList.add('hidden');
-        refill.classList.remove('hidden');
-    } else {
-        main.classList.remove('hidden');
-        refill.classList.add('hidden');
-    }
-}
-
-function notify(msg) {
-    const container = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.className = 'glass border border-white/20 px-8 py-4 rounded-3xl text-[10px] font-black uppercase tracking-widest mb-3 text-white shadow-2xl animate-up';
-    toast.innerText = msg;
-    container.appendChild(toast);
-    setTimeout(() => { 
-        toast.style.opacity = '0'; 
-        setTimeout(() => toast.remove(), 500); 
-    }, 3000);
-}
-
-// --- FILE UPLOAD HANDLING ---
-const fileInput = document.getElementById('file-input');
-if (fileInput) {
-    fileInput.onchange = (e) => {
-        if (e.target.files.length > 0) {
-            const fileName = e.target.files[0].name;
-            notify(`Analyzing: ${fileName}`);
-            // Future logic: Trigger AI appraisal here
-        }
-    };
-}
-
-// --- PAYMENT & PACKS ---
-function selectPack(el, amount) {
-    document.querySelectorAll('.token-card').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
-    selectedAmount = amount;
-    notify(`Selected Pack: ${amount} Tokens`);
-}
-
-function processPayment(method) {
-    if (selectedAmount === 0) return notify("Select a token pack first");
-    notify(`Connecting to ${method} Gateway...`);
-    setTimeout(() => {
-        currentTokens += selectedAmount;
-        document.getElementById('token-count-header').innerText = `${currentTokens} Tokens`;
-        notify(`Success! Added ${selectedAmount} Tokens.`);
-        toggleModal('profile-overlay', false);
-    }, 1500);
-}
-
-// --- FIREBASE OBSERVER ---
-auth.onAuthStateChanged((user) => {
-    const authBtn = document.getElementById('header-auth-btn');
-    const profileHub = document.getElementById('user-profile-hub');
-    
-    if (user) {
-        if (authBtn) authBtn.classList.add('hidden');
-        if (profileHub) profileHub.classList.remove('hidden');
-        
-        const name = user.displayName || user.email.split('@')[0];
-        document.getElementById('display-username').innerText = name;
-        document.getElementById('overlay-username').innerText = name;
-        document.getElementById('user-avatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${user.email}&background=111&color=fff`;
-    } else {
-        if (authBtn) authBtn.classList.remove('hidden');
-        if (profileHub) profileHub.classList.add('hidden');
-    }
-});
-
-// --- AUTH EVENT HANDLERS ---
-const googleBtn = document.getElementById('google-login-btn');
-if (googleBtn) {
-    googleBtn.onclick = () => {
-        auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
-            .then(() => toggleModal('auth-modal', false))
-            .catch(err => notify(err.message));
-    };
-}
-
-const authSubmitBtn = document.getElementById('auth-submit-btn');
-if (authSubmitBtn) {
-    authSubmitBtn.onclick = () => {
-        const email = document.getElementById('auth-email').value;
-        const pass = document.getElementById('auth-password').value;
-        auth.signInWithEmailAndPassword(email, pass)
-            .then(() => toggleModal('auth-modal', false))
-            .catch(err => notify(err.message));
-    };
-}
-
-function logoutUser() {
-    if (confirm("Logout of session?")) {
-        auth.signOut().then(() => {
-            toggleModal('profile-overlay', false);
-            notify("Logged Out");
-        });
-    }
-}
-
-async function deleteAccount() {
-    const user = auth.currentUser; 
-    if (!user) return;
-    const pass = prompt("Confirm Account Deletion with password:");
-    if (!pass) return;
-    const cred = firebase.auth.EmailAuthProvider.credential(user.email, pass);
-    try {
-        await user.reauthenticateWithCredential(cred);
-        if (confirm("FINAL WARNING: This is permanent. Delete?")) {
-            await user.delete();
-            toggleModal('profile-overlay', false);
-            notify("Account Erased");
-        }
-    } catch (e) { notify("Incorrect Password"); }
-}
-
-// --- INITIAL LOAD ---
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        const skeleton = document.getElementById('main-skeleton');
-        const hero = document.getElementById('hero-content');
-        if (skeleton) skeleton.classList.add('hidden');
-        if (hero) hero.classList.remove('hidden');
-    }, 1500);
-});
