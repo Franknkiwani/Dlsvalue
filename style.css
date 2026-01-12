@@ -1,223 +1,104 @@
-/* --- 1. CORE VARIABLES & BASE --- */
 :root {
     --bg-pure: #000000;
-    --glass-bg: rgba(15, 15, 15, 0.8);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --pink: #ff00ff;
-    --cyan: #00ffff;
-    --text: #ffffff;
+    --glass-bg: rgba(20, 20, 20, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --text-main: #ffffff;
+    --text-dim: #a1a1aa;
+    --accent: #ffffff;
 }
 
-* { 
-    box-sizing: border-box; 
-}
+* { box-sizing: border-box; }
 
 body {
     margin: 0;
-    padding: 0;
     background-color: var(--bg-pure);
-    color: var(--text);
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    overflow-x: hidden;
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
     min-height: 100vh;
-    /* Subtle radial gradient to make the black feel deeper */
-    background: radial-gradient(circle at center, #0a0a0a 0%, #000000 100%);
 }
 
-/* --- 2. GLASSY HEADER --- */
+/* Header & Racing Button (Retained but slimmed) */
 header {
     position: fixed;
-    top: 0;
-    width: 100%;
-    height: 60px;
-    z-index: 100;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    top: 0; width: 100%; height: 50px; z-index: 100;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--glass-border);
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 0 20px;
+    display: flex; align-items: center; justify-content: flex-end; padding: 0 20px;
 }
 
-/* --- 3. RACING BORDER LOGIN BUTTON --- */
 .btn-wrapper {
-    position: relative;
-    width: 130px;
-    height: 42px;
-    padding: 2px;
-    border-radius: 21px;
-    overflow: hidden;
-    cursor: pointer;
+    position: relative; width: 110px; height: 34px; padding: 1px;
+    border-radius: 17px; overflow: hidden; cursor: pointer;
 }
 
 .btn-wrapper::before {
-    content: '';
-    position: absolute;
-    width: 150%;
-    height: 400%;
-    background: conic-gradient(
-        transparent 0deg, 
-        var(--pink) 30deg, 
-        transparent 90deg, 
-        transparent 180deg, 
-        var(--cyan) 210deg, 
-        transparent 270deg
-    );
-    animation: rotate 3s linear infinite;
-    top: -150%; 
-    left: -25%;
+    content: ''; position: absolute; width: 150%; height: 400%;
+    background: conic-gradient(transparent 0deg, #ff00ff 30deg, transparent 90deg, transparent 180deg, #00ffff 210deg, transparent 270deg);
+    animation: rotate 4s linear infinite; top: -150%; left: -25%;
 }
 
-@keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 .login-trigger {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    height: 100%;
-    background: var(--glass-bg);
-    color: white;
-    border: none;
-    border-radius: 20px;
-    font-weight: 600;
-    cursor: pointer;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.3s;
+    position: relative; z-index: 1; width: 100%; height: 100%;
+    background: #000; color: white; border: none; border-radius: 16px;
+    font-size: 0.8rem; font-weight: 500; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
 }
 
-.login-trigger:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-/* --- 4. GAMIFIED MODAL & CARD --- */
+/* Clean Auth Modal */
 #login-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    display: none; 
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-    animation: fadeIn 0.4s ease;
+    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    display: none; justify-content: center; align-items: center; z-index: 2000;
 }
 
 .auth-card {
-    background: var(--glass-bg);
-    width: 90%;
-    max-width: 400px;
-    padding: 40px;
-    border-radius: 24px;
-    border: 1px solid var(--glass-border);
-    text-align: center;
-    position: relative;
-    box-shadow: 0 0 50px rgba(255, 0, 255, 0.1), 0 0 50px rgba(0, 255, 255, 0.1);
-    transform: translateY(20px);
-    animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    background: var(--glass-bg); width: 100%; max-width: 380px;
+    padding: 32px; border-radius: 28px; border: 1px solid var(--glass-border);
+    text-align: center; position: relative;
 }
 
-.auth-card h2 {
-    margin-bottom: 30px;
-    font-size: 2rem;
-    background: linear-gradient(to right, var(--pink), var(--cyan));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    letter-spacing: 1px;
+.auth-card h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 24px; }
+
+/* Profile Pic Upload */
+.profile-upload {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: rgba(255,255,255,0.05); border: 1px dashed var(--glass-border);
+    margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; overflow: hidden; font-size: 0.7rem; color: var(--text-dim);
 }
 
-/* --- 5. INPUTS & BUTTONS --- */
 input {
-    width: 100%;
-    padding: 15px;
-    margin-bottom: 15px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    color: white;
-    outline: none;
-    transition: 0.3s;
+    width: 100%; padding: 12px 16px; margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border);
+    border-radius: 12px; color: white; outline: none; font-size: 0.9rem;
 }
 
-input:focus {
-    border-color: var(--cyan);
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.08);
-}
-
+/* Buttons */
 .submit-btn {
-    width: 100%;
-    padding: 15px;
-    background: linear-gradient(90deg, var(--pink), var(--cyan));
-    border: none;
-    border-radius: 12px;
-    color: white;
-    font-weight: bold;
-    font-size: 1rem;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: 0.3s;
-    box-shadow: 0 4px 15px rgba(255, 0, 255, 0.3);
+    width: 100%; padding: 12px; background: #fff; color: #000;
+    border: none; border-radius: 12px; font-weight: 600; cursor: pointer;
+    margin-top: 8px; transition: 0.2s;
 }
 
-.submit-btn:hover {
-    transform: scale(1.02);
-    filter: brightness(1.2);
-    box-shadow: 0 4px 20px rgba(0, 255, 255, 0.4);
+.google-btn {
+    width: 100%; padding: 12px; background: rgba(255,255,255,0.05);
+    color: white; border: 1px solid var(--glass-border); border-radius: 12px;
+    font-weight: 500; cursor: pointer; margin-top: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
 }
 
-.toggle-link {
-    margin-top: 20px;
-    font-size: 0.9rem;
-    color: #888;
-    cursor: pointer;
+.google-btn img { width: 18px; height: 18px; }
+
+.forgot-link {
+    display: block; margin-top: 10px; font-size: 0.75rem; color: var(--text-dim);
+    text-decoration: none; cursor: pointer;
 }
 
-.toggle-link span { 
-    color: var(--cyan); 
-    font-weight: bold;
-}
+.toggle-link { margin-top: 24px; font-size: 0.85rem; color: var(--text-dim); }
+.toggle-link span { color: #fff; cursor: pointer; font-weight: 500; }
 
-.close-btn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    cursor: pointer;
-    font-size: 1.5rem;
-    opacity: 0.5;
-    color: white;
-    transition: 0.3s;
-}
-
-.close-btn:hover {
-    opacity: 1;
-    transform: rotate(90deg);
-}
-
-/* --- 6. APP CONTENT AREA --- */
-#app {
-    width: 100%;
-    max-width: 1200px;
-    margin: 80px auto 0 auto;
-    padding: 20px;
-}
-
-/* --- 7. UTILITY ANIMATIONS --- */
-@keyframes fadeIn { 
-    from { opacity: 0; } 
-    to { opacity: 1; } 
-}
-
-@keyframes slideUp { 
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; } 
-}
+.close-btn { position: absolute; top: 20px; right: 20px; opacity: 0.5; cursor: pointer; }
