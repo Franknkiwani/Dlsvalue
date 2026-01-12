@@ -1,4 +1,8 @@
-// --- FIREBASE CONFIGURATION ---
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 const firebaseConfig = {
     apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
     authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -10,15 +14,12 @@ const firebaseConfig = {
     measurementId: "G-LLT6F9WRKH"
 };
 
-// Initialize Firebase only if it hasn't been initialized yet
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 
-// Export variables to the Global Window Object
-// This allows script.js to access 'auth', 'db', and 'googleProvider'
-window.auth = firebase.auth();
-window.db = firebase.firestore();
-window.googleProvider = new firebase.auth.GoogleAuthProvider();
+// Export instances to be used in script.js
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const googleProvider = new GoogleAuthProvider();
 
-console.log("Firebase Engine: Online");
+console.log("Firebase Engine: v10 Modular Online");
