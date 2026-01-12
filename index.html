@@ -2,50 +2,65 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GitHub File Reader</title>
-    <style>
-        body { font-family: monospace; background: #1e1e1e; color: #d4d4d4; padding: 20px; }
-        pre { background: #2d2d2d; padding: 15px; border-radius: 5px; overflow-x: auto; border: 1px solid #444; }
-        h2 { color: #4ec9b0; border-bottom: 1px solid #444; padding-bottom: 10px; }
-        .loading { color: #ce9178; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <title>Dark Glass App</title>
+    
+    <link rel="stylesheet" href="style.css">
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+            projectId: "itzhoyoo-f9f7e",
+            storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+            messagingSenderId: "1094792075584",
+            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        
+        // Attach to window so script.js can access them
+        window.auth = getAuth(app);
+        window.db = getFirestore(app);
+        window.googleProvider = new GoogleAuthProvider();
+    </script>
 </head>
 <body>
 
-    <h2>Source: index.html</h2>
-    <pre id="index-code" class="loading">Fetching index.html...</pre>
+    <header>
+        <div class="btn-wrapper" onclick="toggleModal()">
+            <button class="login-trigger">Login</button>
+        </div>
+    </header>
 
-    <h2>Source: style.css</h2>
-    <pre id="css-code" class="loading">Fetching style.css...</pre>
+    <main id="app">
+        </main>
 
-<script>
-    // --- SET YOUR DETAILS HERE ---
-    const USER = 'YOUR_GITHUB_USERNAME';
-    const REPO = 'YOUR_REPO_NAME';
+    <div id="login-modal">
+        <div class="auth-card">
+            <span class="close-btn" onclick="toggleModal()">×</span>
+            <div id="auth-content">
+                <h2 id="auth-title">Welcome</h2>
+                
+                <input type="email" placeholder="Email Address" id="email" required>
+                <input type="password" placeholder="Password" id="password" required>
+                
+                <button class="submit-btn" id="main-btn">Enter Dimension</button>
+                
+                <p class="toggle-link" onclick="switchAuth()">
+                    New explorer? <span>Register here</span>
+                </p>
+            </div>
+        </div>
+    </div>
 
-    async function getFileContent(filePath, elementId) {
-        const url = `https://api.github.com/repos/${USER}/${REPO}/contents/${filePath}`;
-        
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data.content) {
-                // GitHub sends content in Base64; atob() decodes it to a string
-                const decodedContent = atob(data.content.replace(/\n/g, ''));
-                document.getElementById(elementId).textContent = decodedContent;
-            } else {
-                document.getElementById(elementId).textContent = "File not found.";
-            }
-        } catch (error) {
-            document.getElementById(elementId).textContent = "Error loading file.";
-        }
-    }
-
-    // Run the functions
-    getFileContent('index.html', 'index-code');
-    getFileContent('style.css', 'css-code');
-</script>
+    <script type="module" src="script.js"></script>
 
 </body>
 </html>
