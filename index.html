@@ -4,66 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="dark">
-    <title>Dark Glass App</title>
-    
+    <title>Clean Dark App</title>
     <link rel="stylesheet" href="style.css">
-
-
 </head>
 <body>
 
     <header>
         <div class="btn-wrapper" onclick="toggleModal()">
-            <button class="login-trigger">Login</button>
+            <button class="login-trigger">Get Started</button>
         </div>
     </header>
 
     <div id="login-modal">
         <div class="auth-card">
-            <span class="close-btn" onclick="toggleModal()">×</span>
-            <div id="auth-content">
-                <h2 id="auth-title">Welcome</h2>
-                <input type="email" placeholder="Email Address" id="email">
-                <input type="password" placeholder="Password" id="password">
-                <button class="submit-btn" id="main-btn">Enter Dimension</button>
-                <p class="toggle-link" onclick="switchAuth()">New explorer? <span>Register here</span></p>
+            <span class="close-btn" onclick="toggleModal()">✕</span>
+            <h2 id="auth-title">Sign In</h2>
+
+            <div id="register-fields" style="display: none;">
+                <div class="profile-upload" onclick="document.getElementById('pfp-input').click()">
+                    <span id="pfp-label">Add Photo</span>
+                    <input type="file" id="pfp-input" hidden accept="image/*">
+                </div>
+                <input type="text" placeholder="Username Handle" id="username">
             </div>
+
+            <input type="email" placeholder="Email Address">
+            <input type="password" placeholder="Password">
+            
+            <a class="forgot-link" id="forgot-pass" onclick="resetFlow()">Forgot password?</a>
+
+            <button class="submit-btn" id="main-btn">Continue</button>
+
+            <div style="margin: 15px 0; font-size: 0.7rem; color: #444;">OR</div>
+
+            <button class="google-btn">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" alt="Google">
+                Continue with Google
+            </button>
+
+            <p class="toggle-link" id="toggle-text">
+                Don't have an account? <span onclick="switchAuth()">Sign Up</span>
+            </p>
         </div>
     </div>
 
     <div id="app"></div>
 
     <script type="module" src="firebase.js"></script>
-    <script type="module">
-        // Internal JS for the gamified UI logic
-        const modal = document.getElementById('login-modal');
-        const title = document.getElementById('auth-title');
-        const mainBtn = document.getElementById('main-btn');
-        let isLogin = true;
-
-        window.toggleModal = () => {
-            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-        };
-
-        window.switchAuth = () => {
-            isLogin = !isLogin;
-            // Add a quick "shake" or "pop" animation when switching
-            const card = document.querySelector('.auth-card');
-            card.style.animation = 'none';
-            card.offsetHeight; /* trigger reflow */
-            card.style.animation = 'slideUp 0.4s ease';
-
-            if(isLogin) {
-                title.innerText = "Welcome";
-                mainBtn.innerText = "Enter Dimension";
-                document.querySelector('.toggle-link').innerHTML = "New explorer? <span>Register here</span>";
-            } else {
-                title.innerText = "Join Us";
-                mainBtn.innerText = "Create Identity";
-                document.querySelector('.toggle-link').innerHTML = "Already a member? <span>Login here</span>";
-            }
-        };
-    </script>
+    
     <script type="module" src="script.js"></script>
 </body>
 </html>
