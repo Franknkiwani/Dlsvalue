@@ -4,14 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="dark">
-    <title>Dark App</title>
+    <title>Dark Glass App</title>
+    
     <link rel="stylesheet" href="style.css">
+
+
 </head>
 <body>
+
+    <header>
+        <div class="btn-wrapper" onclick="toggleModal()">
+            <button class="login-trigger">Login</button>
+        </div>
+    </header>
+
+    <div id="login-modal">
+        <div class="auth-card">
+            <span class="close-btn" onclick="toggleModal()">×</span>
+            <div id="auth-content">
+                <h2 id="auth-title">Welcome</h2>
+                <input type="email" placeholder="Email Address" id="email">
+                <input type="password" placeholder="Password" id="password">
+                <button class="submit-btn" id="main-btn">Enter Dimension</button>
+                <p class="toggle-link" onclick="switchAuth()">New explorer? <span>Register here</span></p>
+            </div>
+        </div>
+    </div>
 
     <div id="app"></div>
 
     <script type="module" src="firebase.js"></script>
+    <script type="module">
+        // Internal JS for the gamified UI logic
+        const modal = document.getElementById('login-modal');
+        const title = document.getElementById('auth-title');
+        const mainBtn = document.getElementById('main-btn');
+        let isLogin = true;
+
+        window.toggleModal = () => {
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        };
+
+        window.switchAuth = () => {
+            isLogin = !isLogin;
+            // Add a quick "shake" or "pop" animation when switching
+            const card = document.querySelector('.auth-card');
+            card.style.animation = 'none';
+            card.offsetHeight; /* trigger reflow */
+            card.style.animation = 'slideUp 0.4s ease';
+
+            if(isLogin) {
+                title.innerText = "Welcome";
+                mainBtn.innerText = "Enter Dimension";
+                document.querySelector('.toggle-link').innerHTML = "New explorer? <span>Register here</span>";
+            } else {
+                title.innerText = "Join Us";
+                mainBtn.innerText = "Create Identity";
+                document.querySelector('.toggle-link').innerHTML = "Already a member? <span>Login here</span>";
+            }
+        };
+    </script>
     <script type="module" src="script.js"></script>
 </body>
 </html>
