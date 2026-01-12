@@ -167,3 +167,19 @@
             font-size: 1.5rem;
             opacity: 0.5;
         }
+/* Disable text selection for the whole app */
+body {
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none;     /* IE 10 and Consumer Preview */
+    user-select: none;         /* Standard syntax */
+    
+    /* Disables the blue "tap highlight" on mobile devices */
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Allow selection only in input fields (so users can still type/paste) */
+input, textarea {
+    -webkit-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
