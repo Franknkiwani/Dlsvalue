@@ -1,15 +1,12 @@
-import { db } from './firebase.js'; // Assuming you exported db from firebase.js
+import { auth, db, googleProvider } from './firebase.js';
 import { 
-    getAuth, 
+    signInWithPopup, 
     signInWithEmailAndPassword, 
     createUserWithEmailAndPassword, 
-    googleAuthProvider, 
-    signInWithPopup,
-    sendPasswordResetEmail 
+    sendPasswordResetEmail,
+    signOut 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-const auth = getAuth();
-const provider = new googleAuthProvider();
+import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- SELECTORS ---
 const mainBtn = document.getElementById('main-btn');
@@ -17,72 +14,79 @@ const googleBtn = document.querySelector('.google-btn');
 const emailInput = document.querySelector('input[type="email"]');
 const passwordInput = document.querySelector('input[type="password"]');
 const usernameInput = document.getElementById('username');
+const registerFields = document.getElementById('register-fields');
 
 // --- 1. GOOGLE LOGIN ---
 googleBtn.addEventListener('click', async () => {
     try {
-        const result = await signInWithPopup(auth, provider);
-        console.log("User logged in via Google:", result.user);
-        window.toggleModal(); // Close modal on success
-        loadDashboard(result.user);
+        const result = await signInWithPopup(auth, googleProvider);
+        window.toggleModal();
+        handleAuthSuccess(result.user);
     } catch (error) {
-        console.error("Google Auth Error:", error.message);
-        alert(error.message);
+        alert("Google Error: " + error.message);
     }
 });
 
-// --- 2. EMAIL/PASSWORD LOGIC (Login & Register) ---
+// --- 2. EMAIL/PASSWORD (Login & Register) ---
 mainBtn.addEventListener('click', async () => {
     const email = emailInput.value;
     const password = passwordInput.value;
-    const isRegisterMode = document.getElementById('register-fields').style.display === 'block';
+    const isRegister = registerFields.style.display === 'block';
 
-    if (!email || !password) return alert("Please fill in all fields.");
+    if (!email || !password) return alert("Fill in all fields");
 
     try {
-        if (isRegisterMode) {
-            // REGISTER FLOW
-            const username = usernameInput.value;
+        if (isRegister) {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            console.log("Account Created:", userCredential.user);
-            // You can save the username to Firestore here if needed
+            const user = userCredential.user;
+            
+            // Save username to Firestore using v10 syntax
+            await setDoc(doc(db, "users", user.uid), {
+                username: usernameInput.value,
+                email: email,
+                createdAt: serverTimestamp()
+            });
+            
+            window.toggleModal();
+            handleAuthSuccess(user);
         } else {
-            // LOGIN FLOW
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            console.log("Logged In:", userCredential.user);
+            window.toggleModal();
+            handleAuthSuccess(userCredential.user);
         }
-        
-        window.toggleModal();
-        loadDashboard(auth.currentUser);
-    } catch (error) {
-        alert(error.message);
+    } catch (err) {
+        alert(err.message);
     }
 });
 
 // --- 3. FORGOT PASSWORD ---
 window.resetFlow = async () => {
     const email = emailInput.value;
-    if (!email) return alert("Please enter your email address first.");
-    
+    if (!email) return alert("Enter your email first");
+
     try {
         await sendPasswordResetEmail(auth, email);
-        alert("Reset link sent! Check your inbox.");
-    } catch (error) {
-        alert(error.message);
+        alert("Reset link sent to " + email);
+    } catch (err) {
+        alert(err.message);
     }
 };
 
 // --- 4. SUCCESS DASHBOARD ---
-function loadDashboard(user) {
+function handleAuthSuccess(user) {
     const app = document.getElementById('app');
     app.innerHTML = `
-        <div style="text-align: center; animation: slideUp 0.8s ease;">
-            <h1>Welcome back, ${user.displayName || 'User'}</h1>
-            <p style="color: #a1a1aa;">Your secure session is active.</p>
-            <div class="auth-card" style="margin: 20px auto; max-width: 300px;">
-                <p>Status: Authenticated</p>
-                <button class="submit-btn" onclick="location.reload()">Sign Out</button>
+        <div style="text-align: center; margin-top: 50px; animation: fadeIn 1s forwards;">
+            <h1 style="font-weight: 200; letter-spacing: 2px;">WELCOME</h1>
+            <p style="color: #666;">${user.email}</p>
+            <div style="margin-top: 30px; padding: 20px; border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; background: rgba(255,255,255,0.02);">
+                <p>Access Granted</p>
+                <button class="submit-btn" style="width: auto; padding: 10px 30px;" id="sign-out-btn">Sign Out</button>
             </div>
         </div>
     `;
+    
+    document.getElementById('sign-out-btn').addEventListener('click', () => {
+        signOut(auth).then(() => location.reload());
+    });
 }
