@@ -1,27 +1,11 @@
-// 1. FIREBASE CONFIGURATION
-// (Variables are defined globally so all functions can see them)
-const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.filestorage.app",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-};
+/**
+ * DLS VALUE - MAIN LOGIC
+ * Handles: UI, Auth State, and Appraisal Simulations
+ */
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-const googleProvider = new firebase.auth.GoogleAuthProvider();
-
-// 2. MAIN APP LOGIC
-// We wait for the HTML (DOM) to load before running any UI commands
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- UI UTILITIES (Attached to window for HTML access) ---
+    // --- UI UTILITIES ---
     window.notify = function(msg) {
         const container = document.getElementById('toast-container');
         if (!container) return;
@@ -45,15 +29,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.setTab = function(type) {
         const isReg = type === 'register';
-        const fields = document.getElementById('register-fields');
-        if (fields) fields.classList.toggle('hidden', !isReg);
+        const regFields = document.getElementById('register-fields');
+        if (regFields) regFields.classList.toggle('hidden', !isReg);
         
         document.getElementById('tab-login').className = isReg ? 'text-sm font-black text-neutral-600 uppercase tracking-widest' : 'text-sm font-black text-white uppercase tracking-widest';
         document.getElementById('tab-register').className = isReg ? 'text-sm font-black text-white uppercase tracking-widest' : 'text-sm font-black text-neutral-600 uppercase tracking-widest';
         document.getElementById('auth-submit-btn').innerText = isReg ? 'Create Account' : 'Submit';
     };
 
-    // --- AUTH OBSERVER (Updates Profile UI) ---
+    // --- AUTH OBSERVER (Handle Profile UI) ---
+    // Uses 'auth' from firebase-config.js
     auth.onAuthStateChanged((user) => {
         const authBtn = document.getElementById('header-auth-btn');
         const profileHub = document.getElementById('user-profile-hub');
@@ -65,7 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('display-username').innerText = user.displayName || user.email.split('@')[0];
                 document.getElementById('user-avatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${user.email}&background=333&color=fff`;
                 
-                // Tier Logic: Toggle isPro to true manually to see the Gold UI
+                // Tier Logic
+                // Change this to true to see the Gold/Pro UI
                 const isPro = false; 
                 updateUserTier(isPro);
             }
@@ -82,16 +68,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isPro) {
             badge.innerText = "PRO";
-            badge.className = "text-[7px] px-1.5 py-0.5 rounded font-black uppercase tracking-widest pro";
+            badge.style.backgroundColor = "#D4AF37"; // Gold
+            badge.style.color = "#000";
             tokenText.innerText = "250";
         } else {
             badge.innerText = "FREE";
-            badge.className = "text-[7px] px-1.5 py-0.5 rounded font-black uppercase tracking-widest free";
+            badge.style.backgroundColor = "#8B4513"; // Brown
+            badge.style.color = "#fff";
             tokenText.innerText = "50";
         }
     };
 
-    // --- EVENT LISTENERS (Button Actions) ---
+    // --- BUTTON CLICKS ---
 
     // Google Login
     const googleBtn = document.getElementById('google-login-btn');
@@ -104,10 +92,10 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Email Submit
-    const submitBtn = document.getElementById('auth-submit-btn');
-    if (submitBtn) {
-        submitBtn.onclick = () => {
+    // Email/Password Submit
+    const authSubmit = document.getElementById('auth-submit-btn');
+    if (authSubmit) {
+        authSubmit.onclick = () => {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             const isReg = !document.getElementById('register-fields').classList.contains('hidden');
@@ -126,7 +114,9 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // --- INITIALIZATION ---
+    // --- APP FLOW ---
+
+    // Initial Loading State
     setTimeout(() => {
         const skeleton = document.getElementById('main-skeleton');
         const content = document.getElementById('hero-content');
@@ -135,11 +125,12 @@ document.addEventListener('DOMContentLoaded', () => {
         notify("AI Neural Network Online");
     }, 2500);
 
+    // File Input Logic
     const fileInput = document.getElementById('file-input');
     if (fileInput) {
         fileInput.onchange = (e) => {
             if(e.target.files[0]) {
-                notify("Starting 11 Scan...");
+                notify("Starting 11 Scan Initiated...");
                 setTimeout(() => {
                     const hasMore = confirm("Scan full bench? (Premium Feature)");
                     if(hasMore) toggleModal(true);
@@ -148,8 +139,11 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    const modalDiv = document.getElementById('auth-modal');
-    if (modalDiv) {
-        modalDiv.onclick = (e) => { if(e.target.id === 'auth-modal') toggleModal(false); };
+    // Close Modal on Overlay Click
+    const authModal = document.getElementById('auth-modal');
+    if (authModal) {
+        authModal.onclick = (e) => {
+            if(e.target.id === 'auth-modal') toggleModal(false);
+        };
     }
 });
