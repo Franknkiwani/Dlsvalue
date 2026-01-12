@@ -1,7 +1,27 @@
-// --- WRAPPER TO ENSURE DOM IS READY ---
+// 1. FIREBASE CONFIGURATION
+// (Variables are defined globally so all functions can see them)
+const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+// 2. MAIN APP LOGIC
+// We wait for the HTML (DOM) to load before running any UI commands
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- UI UTILITIES (Attached to window so HTML can see them) ---
+    // --- UI UTILITIES (Attached to window for HTML access) ---
     window.notify = function(msg) {
         const container = document.getElementById('toast-container');
         if (!container) return;
@@ -17,32 +37,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.toggleModal = function(show) {
         const modal = document.getElementById('auth-modal');
-        if (!modal) return;
-        modal.classList.toggle('hidden', !show);
-        document.body.classList.toggle('modal-open', show);
+        if (modal) {
+            modal.classList.toggle('hidden', !show);
+            document.body.classList.toggle('modal-open', show);
+        }
     };
 
     window.setTab = function(type) {
         const isReg = type === 'register';
-        const regFields = document.getElementById('register-fields');
-        const loginTab = document.getElementById('tab-login');
-        const regTab = document.getElementById('tab-register');
-        const submitBtn = document.getElementById('auth-submit-btn');
-
-        if (regFields) regFields.classList.toggle('hidden', !isReg);
+        const fields = document.getElementById('register-fields');
+        if (fields) fields.classList.toggle('hidden', !isReg);
         
-        if (loginTab) {
-            loginTab.classList.toggle('text-neutral-600', isReg);
-            loginTab.classList.toggle('text-white', !isReg);
-        }
-        if (regTab) {
-            regTab.classList.toggle('text-white', isReg);
-            regTab.classList.toggle('text-neutral-600', !isReg);
-        }
-        if (submitBtn) submitBtn.innerText = isReg ? 'Create Account' : 'Submit';
+        document.getElementById('tab-login').className = isReg ? 'text-sm font-black text-neutral-600 uppercase tracking-widest' : 'text-sm font-black text-white uppercase tracking-widest';
+        document.getElementById('tab-register').className = isReg ? 'text-sm font-black text-white uppercase tracking-widest' : 'text-sm font-black text-neutral-600 uppercase tracking-widest';
+        document.getElementById('auth-submit-btn').innerText = isReg ? 'Create Account' : 'Submit';
     };
 
-    // --- AUTH OBSERVER (Handle Profile UI) ---
+    // --- AUTH OBSERVER (Updates Profile UI) ---
     auth.onAuthStateChanged((user) => {
         const authBtn = document.getElementById('header-auth-btn');
         const profileHub = document.getElementById('user-profile-hub');
@@ -54,8 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('display-username').innerText = user.displayName || user.email.split('@')[0];
                 document.getElementById('user-avatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${user.email}&background=333&color=fff`;
                 
-                // Logic for Premium Status and Tokens
-                const isPro = false; // Set to true to test the Gold/250 token UI
+                // Tier Logic: Toggle isPro to true manually to see the Gold UI
+                const isPro = false; 
                 updateUserTier(isPro);
             }
         } else {
@@ -80,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- EVENT LISTENERS ---
+    // --- EVENT LISTENERS (Button Actions) ---
 
     // Google Login
     const googleBtn = document.getElementById('google-login-btn');
@@ -94,14 +105,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Email Submit
-    const authSubmitBtn = document.getElementById('auth-submit-btn');
-    if (authSubmitBtn) {
-        authSubmitBtn.onclick = () => {
+    const submitBtn = document.getElementById('auth-submit-btn');
+    if (submitBtn) {
+        submitBtn.onclick = () => {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             const isReg = !document.getElementById('register-fields').classList.contains('hidden');
 
-            if(!email || !password) return notify("Missing Credentials");
+            if(!email || !password) return notify("Enter Credentials");
 
             if(isReg) {
                 auth.createUserWithEmailAndPassword(email, password)
@@ -115,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // App Initialization
+    // --- INITIALIZATION ---
     setTimeout(() => {
         const skeleton = document.getElementById('main-skeleton');
         const content = document.getElementById('hero-content');
@@ -124,25 +135,21 @@ document.addEventListener('DOMContentLoaded', () => {
         notify("AI Neural Network Online");
     }, 2500);
 
-    // File Selection
     const fileInput = document.getElementById('file-input');
     if (fileInput) {
         fileInput.onchange = (e) => {
             if(e.target.files[0]) {
-                notify("Starting 11 Scan Initiated...");
+                notify("Starting 11 Scan...");
                 setTimeout(() => {
-                    const hasMore = confirm("AI detected 8+ substitutes. Scan full bench? (Premium Feature)");
-                    if(hasMore) { toggleModal(true); }
+                    const hasMore = confirm("Scan full bench? (Premium Feature)");
+                    if(hasMore) toggleModal(true);
                 }, 2000);
             }
         };
     }
 
-    // Modal Close on click outside
-    const authModal = document.getElementById('auth-modal');
-    if (authModal) {
-        authModal.onclick = (e) => {
-            if(e.target.id === 'auth-modal') toggleModal(false);
-        };
+    const modalDiv = document.getElementById('auth-modal');
+    if (modalDiv) {
+        modalDiv.onclick = (e) => { if(e.target.id === 'auth-modal') toggleModal(false); };
     }
 });
