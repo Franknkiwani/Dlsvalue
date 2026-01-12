@@ -1,4 +1,4 @@
-// Firebase configuration
+// --- FIREBASE CONFIGURATION ---
 const firebaseConfig = {
     apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
     authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -10,11 +10,15 @@ const firebaseConfig = {
     measurementId: "G-LLT6F9WRKH"
 };
 
-// Initialize Firebase
+// Initialize Firebase only if it hasn't been initialized yet
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
-const auth = firebase.auth();
-const db = firebase.firestore();
-const googleProvider = new firebase.auth.GoogleAuthProvider();
+// Export variables to the Global Window Object
+// This allows script.js to access 'auth', 'db', and 'googleProvider'
+window.auth = firebase.auth();
+window.db = firebase.firestore();
+window.googleProvider = new firebase.auth.GoogleAuthProvider();
+
+console.log("Firebase Engine: Online");
