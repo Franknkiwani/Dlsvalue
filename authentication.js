@@ -2,21 +2,17 @@ import { auth, db, googleProvider } from './firebase.js';
 import { 
     signInWithPopup, 
     signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword 
+    createUserWithEmailAndPassword, 
+    sendPasswordResetEmail 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// Export the "Open/Close" logic
-export const toggleModal = (modalElement) => {
-    const isFlex = modalElement.style.display === 'flex';
-    modalElement.style.display = isFlex ? 'none' : 'flex';
-};
+export const googleSignIn = () => signInWithPopup(auth, googleProvider);
 
-// Export the Login/Register logic
-export const handleAuth = async (isLogin, email, password, username) => {
-    if (isLogin) {
-        return await signInWithEmailAndPassword(auth, email, password);
-    } else {
+export const forgotPassword = (email) => sendPasswordResetEmail(auth, email);
+
+export const authSubmit = async (isLogin, email, password, username) => {
+    if (!isLogin) {
         const res = await createUserWithEmailAndPassword(auth, email, password);
         await setDoc(doc(db, "users", res.user.uid), {
             username: username || "User",
@@ -24,10 +20,7 @@ export const handleAuth = async (isLogin, email, password, username) => {
             createdAt: serverTimestamp()
         });
         return res;
+    } else {
+        return await signInWithEmailAndPassword(auth, email, password);
     }
-};
-
-// Export Google login
-export const loginWithGoogle = async () => {
-    return await signInWithPopup(auth, googleProvider);
 };
