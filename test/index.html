@@ -2,68 +2,106 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GitHub File Viewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Web Compiler</title>
     <style>
-        body { font-family: 'Courier New', monospace; background: #121212; color: #e0e0e0; padding: 20px; line-height: 1.5; }
-        .container { max-width: 900px; margin: auto; }
-        pre { background: #1e1e1e; padding: 15px; border-radius: 8px; border: 1px solid #333; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; }
-        .filename { color: #569cd6; font-size: 1.2em; margin-top: 30px; font-weight: bold; }
-        .error { color: #f44747; background: #2d0000; padding: 10px; border-radius: 5px; }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: sans-serif; background: #121212; color: white; display: flex; flex-direction: column; height: 100vh; }
+        
+        header { padding: 15px; background: #1e1e1e; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+        .run-btn { background: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        
+        .editors { flex: 1; overflow-y: auto; padding: 10px; }
+        .editor-group { margin-bottom: 15px; }
+        .label { background: #333; padding: 5px 10px; font-size: 12px; color: #00d4ff; border-radius: 4px 4px 0 0; display: inline-block; }
+        
+        textarea { 
+            width: 100%; background: #1e1e1e; color: #d4d4d4; border: 1px solid #333; 
+            padding: 12px; font-family: 'Courier New', monospace; font-size: 14px; 
+            outline: none; resize: vertical; min-height: 120px; display: block;
+        }
+
+        /* Full Screen Preview Overlay */
+        #preview-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 1000; flex-direction: column;
+        }
+        .close-preview { background: #f44336; color: white; border: none; padding: 10px; width: 100%; font-weight: bold; }
+        iframe { flex: 1; width: 100%; border: none; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="status-msg"></div>
-    
-    <div class="filename">📄 index.html</div>
-    <pre id="index-display">Loading...</pre>
+<header>
+    <span><strong>Code Editor</strong></span>
+    <button class="run-btn" onclick="runCode()">▶ RUN CODE</button>
+</header>
 
-    <div class="filename">🎨 style.css</div>
-    <pre id="css-display">Loading...</pre>
+<div class="editors">
+    <div class="editor-group">
+        <div class="label">HTML</div>
+        <textarea id="html-code" placeholder="Enter HTML..."></textarea>
+    </div>
+    <div class="editor-group">
+        <div class="label">CSS</div>
+        <textarea id="css-code" placeholder="Enter CSS..."></textarea>
+    </div>
+    <div class="editor-group">
+        <div class="label">JS</div>
+        <textarea id="js-code" placeholder="Enter JS..."></textarea>
+    </div>
+</div>
+
+<div id="preview-modal">
+    <button class="close-preview" onclick="closePreview()">✕ CLOSE PREVIEW</button>
+    <iframe id="output"></iframe>
 </div>
 
 <script>
-    async function loadRepoFiles() {
-        // 1. AUTOMATICALLY GET USER AND REPO FROM THE URL
-        // Example: https://username.github.io/reponame/
-        const pathParts = window.location.pathname.split('/').filter(p => p);
-        const hostParts = window.location.hostname.split('.');
+    const htmlIn = document.getElementById('html-code');
+    const cssIn = document.getElementById('css-code');
+    const jsIn = document.getElementById('js-code');
+    const modal = document.getElementById('preview-modal');
+    const output = document.getElementById('output');
+
+    // 1. Load Data
+    window.onload = () => {
+        htmlIn.value = localStorage.getItem('m_html') || '';
+        cssIn.value = localStorage.getItem('m_css') || '';
+        jsIn.value = localStorage.getItem('m_js') || '';
+    };
+
+    // 2. Save on Input
+    function autoSave() {
+        localStorage.setItem('m_html', htmlIn.value);
+        localStorage.setItem('m_css', cssIn.value);
+        localStorage.setItem('m_js', jsIn.value);
+    }
+    [htmlIn, cssIn, jsIn].forEach(el => el.addEventListener('input', autoSave));
+
+    // 3. Run Logic
+    function runCode() {
+        const fullCode = `
+            <html>
+                <head><style>${cssIn.value}<\/style></head>
+                <body>
+                    ${htmlIn.value}
+                    <script>${jsIn.value}<\/script>
+                </body>
+            </html>`;
         
-        const USER = hostParts[0]; 
-        const REPO = pathParts[0]; 
-
-        if (!REPO || hostParts[1] !== 'github') {
-            document.getElementById('status-msg').innerHTML = 
-                `<p class="error">⚠️ Error: This page must be hosted on <b>GitHub Pages</b> to auto-detect the repo.</p>`;
-            return;
-        }
-
-        async function fetchFile(fileName, elementId) {
-            // We try 'main' first, then 'master' if it fails
-            const branches = ['main', 'master'];
-            let content = null;
-
-            for (let branch of branches) {
-                const url = `https://api.github.com/repos/${USER}/${REPO}/contents/${fileName}?ref=${branch}`;
-                try {
-                    const response = await fetch(url);
-                    if (response.ok) {
-                        const data = await response.json();
-                        content = atob(data.content.replace(/\n/g, ''));
-                        break; 
-                    }
-                } catch (e) { continue; }
-            }
-
-            document.getElementById(elementId).textContent = content || `File "${fileName}" not found in main or master branch.`;
-        }
-
-        fetchFile('index.html', 'index-display');
-        fetchFile('style.css', 'css-display');
+        const blob = new Blob([fullCode], { type: 'text/html' });
+        output.src = URL.createObjectURL(blob);
+        modal.style.display = 'flex';
     }
 
-    loadRepoFiles();
+    function closePreview() {
+        modal.style.display = 'none';
+        output.src = ''; // Clear memory
+    }
+
+    // 4. Stay-on-page Warning
+    window.onbeforeunload = () => "Discard changes?";
 </script>
 
 </body>
