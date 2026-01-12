@@ -1,16 +1,6 @@
-import { auth, db, googleProvider } from './firebase.js';
-import { 
-    signInWithPopup, 
-    signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword, 
-    sendPasswordResetEmail 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { googleSignIn, forgotPassword, authSubmit } from './authentication.js';
 
-// Wrap everything in an Event Listener to ensure HTML is ready
 document.addEventListener('DOMContentLoaded', () => {
-
-    // --- SELECTORS ---
     const modal = document.getElementById('login-modal');
     const openBtn = document.getElementById('open-auth');
     const closeBtn = document.getElementById('close-modal');
@@ -19,96 +9,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const googleBtn = document.querySelector('.google-btn');
     const forgotBtn = document.getElementById('forgot-pass');
 
-    const emailInput = document.getElementById('email-input');
-    const passwordInput = document.getElementById('password-input');
-    const usernameInput = document.getElementById('username');
-    const registerFields = document.getElementById('register-fields');
-    const authTitle = document.getElementById('auth-title');
-
     let isLogin = true;
 
-    // --- MODAL TOGGLE LOGIC ---
-    const toggleModal = () => {
-        modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
-    };
+    // UI Toggles
+    const toggle = () => modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+    if(openBtn) openBtn.onclick = toggle;
+    if(closeBtn) closeBtn.onclick = toggle;
 
-    if(openBtn) openBtn.addEventListener('click', toggleModal);
-    if(closeBtn) closeBtn.addEventListener('click', toggleModal);
-
-    // --- SWITCH BETWEEN LOGIN/REGISTER ---
+    // Login/Register Switcher
     if(switchBtn) {
-        switchBtn.addEventListener('click', () => {
+        switchBtn.onclick = () => {
             isLogin = !isLogin;
-            if (!isLogin) {
-                authTitle.innerText = "Create Account";
-                registerFields.style.display = "block";
-                forgotBtn.style.display = "none";
-                mainBtn.innerText = "Create Identity";
-                switchBtn.innerText = "Sign In";
-            } else {
-                authTitle.innerText = "Sign In";
-                registerFields.style.display = "none";
-                forgotBtn.style.display = "block";
-                mainBtn.innerText = "Continue";
-                switchBtn.innerText = "Sign Up";
-            }
-        });
+            document.getElementById('auth-title').innerText = isLogin ? "Sign In" : "Create Account";
+            document.getElementById('register-fields').style.display = isLogin ? "none" : "block";
+            mainBtn.innerText = isLogin ? "Continue" : "Create Identity";
+            if(forgotBtn) forgotBtn.style.display = isLogin ? "block" : "none";
+        };
     }
 
-    // --- FIREBASE ACTIONS ---
+    // Google Action
     if(googleBtn) {
-        googleBtn.addEventListener('click', async () => {
-            try {
-                const result = await signInWithPopup(auth, googleProvider);
-                toggleModal();
-                handleAuthSuccess(result.user);
-            } catch (e) { alert(e.message); }
-        });
+        googleBtn.onclick = async () => {
+            try { await googleSignIn(); toggle(); location.reload(); } 
+            catch (e) { alert(e.message); }
+        };
     }
 
+    // Main Submit Action
     if(mainBtn) {
-        mainBtn.addEventListener('click', async () => {
-            const email = emailInput.value;
-            const password = passwordInput.value;
-            if (!email || !password) return alert("Please fill fields");
-
+        mainBtn.onclick = async () => {
+            const email = document.getElementById('email-input').value;
+            const pass = document.getElementById('password-input').value;
+            const user = document.getElementById('username')?.value;
             try {
-                if (!isLogin) {
-                    const res = await createUserWithEmailAndPassword(auth, email, password);
-                    await setDoc(doc(db, "users", res.user.uid), {
-                        username: usernameInput.value || "User",
-                        email: email,
-                        createdAt: serverTimestamp()
-                    });
-                    handleAuthSuccess(res.user);
-                } else {
-                    const res = await signInWithEmailAndPassword(auth, email, password);
-                    handleAuthSuccess(res.user);
-                }
-                toggleModal();
+                await authSubmit(isLogin, email, pass, user);
+                toggle();
+                location.reload();
             } catch (e) { alert(e.message); }
-        });
-    }
-
-    if(forgotBtn) {
-        forgotBtn.addEventListener('click', async () => {
-            if (!emailInput.value) return alert("Enter email first");
-            try {
-                await sendPasswordResetEmail(auth, emailInput.value);
-                alert("Reset link sent!");
-            } catch (e) { alert(e.message); }
-        });
-    }
-
-    function handleAuthSuccess(user) {
-        const appContainer = document.getElementById('app');
-        if(appContainer) {
-            appContainer.innerHTML = `
-                <div style="text-align:center; margin-top:100px; animation: fadeIn 1s forwards;">
-                    <h1 style="letter-spacing: 2px;">DIMENSION ACCESSED</h1>
-                    <p style="color: #a1a1aa;">${user.email}</p>
-                    <button class="submit-btn" style="width:auto; padding:10px 40px; margin-top: 20px;" onclick="location.reload()">Exit Session</button>
-                </div>`;
-        }
+        };
     }
 });
