@@ -1,84 +1,39 @@
-/* --- Core Animations --- */
-@keyframes shimmer { 
-    0% { background-position: -200% 0; } 
-    100% { background-position: 200% 0; } 
+/* Deepest Dark Foundation */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    /* A subtle dark gradient makes the glass pop more than flat black */
+    background: radial-gradient(circle at center, #0a0a0a 0%, #000000 100%);
+    color: #ffffff;
+    font-family: -apple-system, system-ui, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-@keyframes scroll { 
-    0% { transform: translateX(0); } 
-    100% { transform: translateX(-50%); } 
+/* The Glassy Container */
+#app {
+    width: 90%;
+    max-width: 500px;
+    min-height: 400px;
+    padding: 2rem;
+    
+    /* The "Glass" Effect */
+    background: rgba(0, 0, 0, 0.6); /* Semi-transparent black */
+    backdrop-filter: blur(15px);    /* This creates the frosted glass look */
+    -webkit-backdrop-filter: blur(15px);
+    
+    /* Sleek Border */
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    border-radius: 24px;
+    
+    /* Deep Shadow for depth */
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
 }
 
-@keyframes slideUp { 
-    from { transform: translateY(100px); opacity: 0; } 
-    to { transform: translateY(0); opacity: 1; } 
-}
-
-/* --- UI Classes --- */
-.skeleton { 
-    background: linear-gradient(90deg, #111 25%, #222 50%, #111 75%); 
-    background-size: 200% 100%; 
-    animation: shimmer 1.5s infinite linear; 
-}
-
-.ticker-track { 
-    display: flex; 
-    width: max-content; 
-    animation: scroll 25s linear infinite; 
-}
-
-.toast { 
-    animation: slideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; 
-}
-
-.glass { 
-    background: rgba(255, 255, 255, 0.03); 
-    backdrop-filter: blur(20px); 
-    -webkit-backdrop-filter: blur(20px); 
-}
-
-.glass-dark { 
-    background: rgba(0, 0, 0, 0.85); 
-    backdrop-filter: blur(25px); 
-    -webkit-backdrop-filter: blur(25px); 
-}
-
-.hero-bg-stadium {
-    background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), 
-                url('https://png.pngtree.com/thumb_back/fh260/background/20220506/pngtree-soccer-stadium-perspective-background-with-green-lawn-and-white-gates-image_1146798.jpg');
-    background-size: cover; 
-    background-position: center;
-}
-
-/* --- Scrollbar & Body Locks --- */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-body.modal-open { 
-    overflow: hidden; 
-    height: 100vh; 
-}
-
-/* --- Profile & Token UI --- */
-#status-badge.free {
-    background-color: #8B4513; /* Brown */
-    color: white;
-}
-
-#status-badge.pro {
-    background-color: #D4AF37; /* Gold */
-    color: black;
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
-}
-
-#user-avatar {
-    transition: transform 0.3s ease;
-}
-
-#user-avatar:hover {
-    transform: scale(1.1);
-}
-
-#token-count {
-    font-variant-numeric: tabular-nums;
+/* Glowing text effect for that premium look */
+h1, p {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
