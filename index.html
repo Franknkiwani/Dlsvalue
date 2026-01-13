@@ -2,159 +2,301 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="color-scheme" content="dark">
-    <title>Dark Glass App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DLS Value | Premium Football Stats</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="style.css">
-
     <style>
-        /* ADD ONLY THESE NEW CLASSES TO YOUR style.css */
-        .profile-wrapper {
+        /* --- VARIABLES --- */
+        :root {
+            --bg-pure: #000000;
+            --glass-bg: rgba(15, 15, 15, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --pink: #ff00ff;
+            --cyan: #00ffff;
+            --text-main: #ffffff;
+            --text-dim: #a0a0a0;
+        }
+
+        /* --- RESET --- */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-pure);
+            color: var(--text-main);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- HEADER --- */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 65px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
             display: flex;
             align-items: center;
-            gap: 12px;
-            text-align: left;
+            justify-content: space-between;
+            padding: 0 5%;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .football-icon {
+            width: 30px;
+            height: 30px;
+            transform: rotate(-15deg);
+            filter: drop-shadow(0 0 8px var(--cyan));
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .logo-container:hover .football-icon {
+            transform: rotate(165deg);
+        }
+
+        .logo-text {
+            font-family: 'Pacifico', cursive;
+            font-size: 1.4rem;
+            background: linear-gradient(45deg, var(--cyan), var(--pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transform: rotate(-3deg);
+            user-select: none;
+        }
+
+        /* --- BUTTONS --- */
+        .btn-wrapper {
+            position: relative;
+            width: 100px;
+            height: 38px;
+            padding: 1.5px;
+            border-radius: 19px;
+            overflow: hidden;
+        }
+
+        .btn-wrapper::before {
+            content: '';
+            position: absolute;
+            width: 300%; height: 300%;
+            background: conic-gradient(transparent 0deg, var(--pink) 30deg, transparent 90deg, transparent 180deg, var(--cyan) 210deg, transparent 270deg);
+            animation: rotate 4s linear infinite;
+            top: -100%; left: -100%;
+        }
+
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .login-trigger, .scan-btn {
+            position: relative;
+            z-index: 1;
+            width: 100%; height: 100%;
+            background: var(--glass-bg);
+            color: white;
+            border: none;
+            border-radius: 18px;
+            font-weight: 600;
+            font-size: 11px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scan-btn {
+            margin-top: 20px;
+            height: 45px;
+            font-size: 13px;
+            background: linear-gradient(rgba(255,0,255,0.1), rgba(0,255,255,0.1));
+            border: 1px solid var(--glass-border);
+        }
+
+        /* --- LIVE TICKER --- */
+        .ticker-wrap {
+            position: fixed;
+            top: 65px;
             width: 100%;
+            background: rgba(255, 0, 255, 0.05);
+            border-bottom: 1px solid var(--glass-border);
+            overflow: hidden;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            z-index: 99;
         }
 
-        .profile-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 1.5px solid var(--cyan);
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
-            object-fit: cover;
+        .ticker-move {
+            display: flex;
+            white-space: nowrap;
+            animation: ticker 30s linear infinite;
         }
 
-        .profile-info {
+        .ticker-item {
+            padding: 0 30px;
+            font-size: 12px;
+            color: var(--cyan);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* --- MAIN CONTENT --- */
+        main {
+            padding: 140px 20px 60px 20px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            line-height: 1.1;
+            align-items: center;
+            text-align: center;
         }
 
-        .prof-user {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--text);
-            letter-spacing: 0.3px;
+        .hero-title {
+            font-size: clamp(2.8rem, 10vw, 6rem);
+            font-weight: 800;
+            line-height: 0.9;
+            margin-bottom: 20px;
+            background: linear-gradient(to bottom, #fff 50%, #555 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .prof-tokens {
-            font-size: 0.65rem;
+        /* --- INFO CARD --- */
+        .glass-card {
+            margin-top: 40px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 24px;
+            max-width: 400px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .status-msg {
+            margin-top: 15px;
+            font-size: 11px;
             color: var(--cyan);
-            font-family: 'Courier New', Courier, monospace;
-            text-transform: uppercase;
-            margin-top: 2px;
+            display: none;
+        }
+
+        /* --- MOBILE TWEAKS --- */
+        @media (max-width: 480px) {
+            header { padding: 0 15px; }
+            .logo-text { font-size: 1.1rem; }
+            .hero-title { margin-top: 20px; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="btn-wrapper" id="header-btn-wrap">
-            <button class="login-trigger" id="ui-target">Login</button>
+        <div class="logo-container">
+            <svg class="football-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="url(#grad)" stroke-width="1.5"/>
+                <path d="M12 2C12 2 15 5.5 15 12C15 18.5 12 22 12 22" stroke="url(#grad)" stroke-width="1.5"/>
+                <path d="M12 2C12 2 9 5.5 9 12C9 18.5 12 22 12 22" stroke="url(#grad)" stroke-width="1.5"/>
+                <path d="M2.5 9H21.5" stroke="url(#grad)" stroke-width="1.5"/>
+                <path d="M2.5 15H21.5" stroke="url(#grad)" stroke-width="1.5"/>
+                <defs>
+                    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:var(--cyan)" />
+                        <stop offset="100%" style="stop-color:var(--pink)" />
+                    </linearGradient>
+                </defs>
+            </svg>
+            <span class="logo-text">DLS Value</span>
+        </div>
+
+        <div class="btn-wrapper">
+            <button class="login-trigger">Login</button>
         </div>
     </header>
 
-    <div id="login-modal">
-        <div class="auth-card">
-            <span class="close-btn" id="close-modal">×</span>
-            <h2 id="auth-title">Welcome</h2>
-            <input type="email" placeholder="Email" id="email">
-            <input type="password" placeholder="Password" id="password">
-            <button class="submit-btn" id="main-btn">Enter Dimension</button>
-            <p class="toggle-link" id="switch-btn">New explorer? <span>Register here</span></p>
+    <div class="ticker-wrap">
+        <div id="price-ticker" class="ticker-move">
+            <div class="ticker-item">SCAN A CARD TO START •</div>
+            <div class="ticker-item">MBAPPE: $--.-- •</div>
+            <div class="ticker-item">HAALAND: $--.-- •</div>
         </div>
     </div>
 
-    <div id="app"></div>
+    <main>
+        <h1 class="hero-title">NEXT GEN<br>STATS.</h1>
+        
+        <div class="glass-card">
+            <span class="card-tag">AI Market Vision</span>
+            <p class="sub-text">
+                Upload a screenshot of your DLS card. Gemini 2.5 will analyze the stats and update the global value.
+            </p>
+            
+            <input type="file" id="cardUpload" accept="image/*" style="display: none;">
+            
+            <button class="scan-btn" onclick="document.getElementById('cardUpload').click()">
+                Scan DLS Card
+            </button>
+            <p id="status" class="status-msg">Analyzing Card...</p>
+        </div>
+    </main>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    <script>
+        const fileInput = document.getElementById('cardUpload');
+        const statusMsg = document.getElementById('status');
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-            projectId: "itzhoyoo-f9f7e",
-            storageBucket: "itzhoyoo-f9f7e.filestorage.app",
-            messagingSenderId: "1094792075584",
-            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com"
-        };
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const rtdb = getDatabase(app);
+            statusMsg.style.display = 'block';
+            statusMsg.innerText = "Processing Image...";
 
-        const modal = document.getElementById('login-modal');
-        const uiTarget = document.getElementById('ui-target');
-        const headerBtnWrap = document.getElementById('header-btn-wrap');
-        let isLogin = true;
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                const base64String = reader.result.split(',')[1];
 
-        const toggleModal = () => modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
-        document.getElementById('close-modal').onclick = toggleModal;
-
-        document.getElementById('switch-btn').onclick = () => {
-            isLogin = !isLogin;
-            document.getElementById('auth-title').innerText = isLogin ? "Welcome" : "Join Us";
-            document.getElementById('main-btn').innerText = isLogin ? "Enter Dimension" : "Create Identity";
-        };
-
-        document.getElementById('main-btn').onclick = async () => {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            try {
-                if (isLogin) {
-                    await signInWithEmailAndPassword(auth, email, password);
-                } else {
-                    const res = await createUserWithEmailAndPassword(auth, email, password);
-                    const username = email.split('@')[0];
-                    await setDoc(doc(db, "explorers", res.user.uid), { username });
-                    await set(ref(rtdb, 'AITOKENS/' + res.user.uid), {
-                        tokens: 100,
-                        username: username
+                try {
+                    const response = await fetch('/api/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imageBase64: base64String })
                     });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        statusMsg.innerText = `Successfully learned: ${result.learnedData.name} (${result.learnedData.rating})`;
+                        statusMsg.style.color = "#00ffff";
+                    }
+                } catch (err) {
+                    statusMsg.innerText = "Error: Check Vercel logs";
+                    statusMsg.style.color = "#ff00ff";
                 }
-                toggleModal();
-            } catch (e) { alert(e.message); }
-        };
-
-        // --- AUTH OBSERVER ---
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                const usernameBase = user.email.split('@')[0];
-                const pic = `https://ui-avatars.com/api/?name=${usernameBase}&background=00ffff&color=000000`;
-
-                // Live Token Listener
-                const tokenRef = ref(rtdb, 'AITOKENS/' + user.uid);
-                onValue(tokenRef, (snapshot) => {
-                    const data = snapshot.val();
-                    const tokens = data ? data.tokens : 0;
-                    const name = data ? data.username : usernameBase;
-
-                    uiTarget.innerHTML = `
-                        <div class="profile-wrapper">
-                            <img src="${pic}" class="profile-avatar">
-                            <div class="profile-info">
-                                <span class="prof-user">@${name}</span>
-                                <span class="prof-tokens">${tokens} TOKENS</span>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                headerBtnWrap.onclick = () => { if(confirm("Sign out?")) signOut(auth); };
-            } else {
-                uiTarget.innerHTML = "Login";
-                headerBtnWrap.onclick = toggleModal;
-            }
+            };
+            reader.readAsDataURL(file);
         });
+
+        // Optional: Function to refresh prices from Firebase
+        async function fetchLivePrices() {
+            // Add your fetch logic here later to show prices on the ticker
+        }
     </script>
 </body>
 </html>
