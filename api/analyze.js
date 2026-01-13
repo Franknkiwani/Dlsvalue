@@ -1,36 +1,49 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import admin from "firebase-admin";
 
+// 1. Initialize Firebase
 if (!admin.apps.length) {
     admin.initializeApp({
         credential: admin.credential.cert({
             projectId: process.env.FIREBASE_PROJECT_ID,
             clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+            // Fixing the private key format for Vercel
+            privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
         })
     });
 }
 
 const db = admin.firestore();
+
+// 2. Initialize Gemini with your SPECIFIC Key Name
+// We use process.env.GEMINI_API_KEY because that's what you set in Vercel
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export default async function handler(req, res) {
-    if (req.method !== 'POST') return res.status(405).send('Use POST');
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    
+    // Check if API key exists before running
+    if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ error: 'GEMINI_API_KEY is missing in Vercel settings' });
+    }
+
     const { imageBase64 } = req.body;
 
     try {
-        // 1. Gemini Vision: Scan the whole squad at once
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
-        const prompt = "List every DLS card name and rating in this image. Return ONLY JSON: [{n: 'Name', r: 99}]";
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+        
+        const prompt = "Analyze this DLS squad. Extract every player name and their current rating. Return ONLY a JSON array like this: [{\"n\": \"Mbappe\", \"r\": 98}]";
         
         const visionResult = await model.generateContent([
             prompt,
             { inlineData: { data: imageBase64, mimeType: "image/png" } }
         ]);
         
-        const players = JSON.parse(visionResult.response.text());
+        // Clean the AI response (remove markdown ```json blocks if present)
+        const cleanJson = visionResult.response.text().replace(/```json|```/g, "").trim();
+        const players = JSON.parse(cleanJson);
 
-        // 2. Market Logic: Update each player found
+        // 3. Update Database with "Price Floor" Logic
         for (const player of players) {
             const docRef = db.collection("dlsvalueapi").doc(player.n);
 
@@ -46,11 +59,10 @@ export default async function handler(req, res) {
                     scanCount = (data.scan_count || 0) + 1;
                 }
 
-                // MATH: (Total / Count) * Multiplier
                 const avgRating = totalPoints / scanCount;
                 let calculatedWorth = avgRating * 0.65; 
 
-                // PRICE FLOOR: Never let legendary-tier cards go under $45.00
+                // HARD FLOOR: Price never goes under $45.00
                 const finalWorth = Math.max(calculatedWorth, 45.00).toFixed(2);
 
                 t.set(docRef, {
@@ -63,8 +75,10 @@ export default async function handler(req, res) {
             });
         }
 
-        res.status(200).json({ success: true, count: players.length });
+        res.status(200).json({ success: true, playersFound: players.length });
+
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("API Error:", error);
+        res.status(500).json({ error: "Analysis failed", details: error.message });
     }
 }
