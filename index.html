@@ -32,141 +32,99 @@
     <div id="app">
         <div style="padding-top: 150px; text-align: center;">
             <h1>Dimension Locked</h1>
-            <p>Authentication required to access the grid.</p>
         </div>
     </div>
 
     <script type="module">
-        // 1. Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { 
-            getAuth, 
-            signInWithEmailAndPassword, 
-            createUserWithEmailAndPassword, 
-            onAuthStateChanged, 
-            signOut 
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            doc, 
-            setDoc, 
-            getDoc 
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        // Import Realtime Database
+        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 2. Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
             authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
             projectId: "itzhoyoo-f9f7e",
             storageBucket: "itzhoyoo-f9f7e.filestorage.app",
             messagingSenderId: "1094792075584",
-            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com" // Ensure this matches your RTDB URL
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const rtdb = getDatabase(app);
 
-        // 3. UI Selectors
         const modal = document.getElementById('login-modal');
         const mainBtn = document.getElementById('main-btn');
         const uiTarget = document.getElementById('ui-target');
         const headerBtnWrap = document.getElementById('header-btn-wrap');
-        const authTitle = document.getElementById('auth-title');
-        const switchBtn = document.getElementById('switch-btn');
         
         let isLogin = true;
 
-        // 4. Modal & Toggle Logic
-        const toggleModal = () => {
-            modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
-        };
-
+        const toggleModal = () => modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
         document.getElementById('close-modal').onclick = toggleModal;
 
-        switchBtn.onclick = () => {
+        document.getElementById('switch-btn').onclick = () => {
             isLogin = !isLogin;
-            authTitle.innerText = isLogin ? "Welcome" : "Join Us";
+            document.getElementById('auth-title').innerText = isLogin ? "Welcome" : "Join Us";
             mainBtn.innerText = isLogin ? "Enter Dimension" : "Create Identity";
-            switchBtn.innerHTML = isLogin ? 
-                "New explorer? <span>Register here</span>" : 
-                "Already a member? <span>Login here</span>";
         };
 
-        // 5. Authentication Execution
         mainBtn.onclick = async () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-
-            if(!email || !password) return alert("Fill all fields.");
-
             try {
                 if (isLogin) {
                     await signInWithEmailAndPassword(auth, email, password);
                 } else {
                     const res = await createUserWithEmailAndPassword(auth, email, password);
                     const username = email.split('@')[0];
-                    // Save the user identity to Firestore
-                    await setDoc(doc(db, "explorers", res.user.uid), {
-                        username: username,
-                        photoURL: `https://ui-avatars.com/api/?name=${username}&background=00ffff&color=000000`,
-                        joined: new Date().toISOString()
+                    // Save to Firestore
+                    await setDoc(doc(db, "explorers", res.user.uid), { username });
+                    // Initialize AITOKENS in Realtime Database
+                    await set(ref(rtdb, 'AITOKENS/' + res.user.uid), {
+                        tokens: 100, // Starting bonus
+                        username: username
                     });
                 }
                 toggleModal();
-            } catch (e) {
-                alert(e.message);
-            }
+            } catch (e) { alert(e.message); }
         };
 
-        // 6. THE FIX: Auth State Observer
-        // This watches for login/logout and updates the header button
+        // --- REAL-TIME PROFILE UPDATER ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // User is signed in - Fetch profile
-                let name = user.email.split('@')[0];
-                let pic = `https://ui-avatars.com/api/?name=${name}&background=00ffff&color=000000`;
+                const usernameBase = user.email.split('@')[0];
+                const pic = `https://ui-avatars.com/api/?name=${usernameBase}&background=00ffff&color=000000`;
 
-                try {
-                    const docSnap = await getDoc(doc(db, "explorers", user.uid));
-                    if (docSnap.exists()) {
-                        name = docSnap.data().username;
-                        pic = docSnap.data().photoURL;
-                    }
-                } catch (err) {
-                    console.log("Firestore fetch failed, using fallbacks.");
-                }
+                // Listen to Tokens in Realtime Database
+                const tokenRef = ref(rtdb, 'AITOKENS/' + user.uid);
+                onValue(tokenRef, (snapshot) => {
+                    const data = snapshot.val();
+                    const tokenCount = data ? data.tokens : 0;
+                    const displayUsername = data ? data.username : usernameBase;
 
-                // Inject Profile UI into the racing button
-                uiTarget.innerHTML = `
-                    <div class="profile-container">
-                        <img src="${pic}" class="profile-pic" alt="avatar">
-                        <span class="username-display">@${name}</span>
-                    </div>
-                `;
+                    // Update the header button with the new layout
+                    uiTarget.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 12px; text-align: left;">
+                            <img src="${pic}" style="width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid #00ffff;">
+                            <div style="display: flex; flex-direction: column; line-height: 1.2;">
+                                <span style="font-size: 0.85rem; font-weight: 700; color: #fff;">@${displayUsername}</span>
+                                <span style="font-size: 0.7rem; color: #00ffff; font-family: monospace;">${tokenCount} TOKENS</span>
+                            </div>
+                        </div>
+                    `;
+                });
 
-                // Update Header Click to Sign Out
-                headerBtnWrap.onclick = () => {
-                    if(confirm("Disconnect from Dimension?")) signOut(auth);
-                };
-
-                // Update Main Page
-                document.getElementById('app').innerHTML = `
-                    <div style="padding-top: 150px; text-align: center;">
-                        <h1>Access Granted</h1>
-                        <p>Welcome, @${name}. The grid is yours.</p>
-                    </div>
-                `;
+                headerBtnWrap.onclick = () => { if(confirm("Logout?")) signOut(auth); };
+                document.getElementById('app').innerHTML = `<h1>Connected to Grid</h1>`;
             } else {
-                // User is signed out - Reset to Login Button
                 uiTarget.innerHTML = "Login";
                 headerBtnWrap.onclick = toggleModal;
-                document.getElementById('app').innerHTML = `
-                    <div style="padding-top: 150px; text-align: center;">
-                        <h1>Dimension Locked</h1>
-                        <p>Authentication required to access the grid.</p>
-                    </div>
-                `;
+                document.getElementById('app').innerHTML = `<h1>Dimension Locked</h1>`;
             }
         });
     </script>
