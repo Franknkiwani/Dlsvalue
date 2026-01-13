@@ -7,12 +7,43 @@
     <title>Dark Glass App</title>
     
     <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="btn-wrapper" id="header-btn-container">
+            <button class="login-trigger" id="auth-status-btn">Login</button>
+        </div>
+    </header>
+
+    <div id="login-modal">
+        <div class="auth-card">
+            <span class="close-btn" id="close-modal-btn">×</span>
+            <div id="auth-content">
+                <h2 id="auth-title">Welcome</h2>
+                <input type="email" placeholder="Email Address" id="email">
+                <input type="password" placeholder="Password" id="password">
+                <button class="submit-btn" id="main-btn">Enter Dimension</button>
+                <p class="toggle-link" id="auth-toggle">New explorer? <span>Register here</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="app">
+        </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword, 
+            onAuthStateChanged,
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // 1. Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
             authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -22,45 +53,90 @@
             appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        
-        // Attach to window so script.js can access them
-        window.auth = getAuth(app);
-        window.db = getFirestore(app);
-        window.googleProvider = new GoogleAuthProvider();
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // 2. UI Elements
+        const modal = document.getElementById('login-modal');
+        const authTitle = document.getElementById('auth-title');
+        const mainBtn = document.getElementById('main-btn');
+        const authToggle = document.getElementById('auth-toggle');
+        const authStatusBtn = document.getElementById('auth-status-btn');
+        const closeBtn = document.getElementById('close-modal-btn');
+        const headerBtnWrap = document.getElementById('header-btn-container');
+
+        let isLogin = true;
+
+        // 3. UI Interaction Logic
+        const toggleModal = () => {
+            modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+        };
+
+        const switchAuth = () => {
+            isLogin = !isLogin;
+            const card = document.querySelector('.auth-card');
+            card.style.animation = 'none';
+            card.offsetHeight; // trigger reflow
+            card.style.animation = 'slideUp 0.4s ease';
+
+            if(isLogin) {
+                authTitle.innerText = "Welcome";
+                mainBtn.innerText = "Enter Dimension";
+                authToggle.innerHTML = "New explorer? <span>Register here</span>";
+            } else {
+                authTitle.innerText = "Join Us";
+                mainBtn.innerText = "Create Identity";
+                authToggle.innerHTML = "Already a member? <span>Login here</span>";
+            }
+        };
+
+        // Event Listeners for UI
+        headerBtnWrap.addEventListener('click', () => {
+            if (auth.currentUser) {
+                signOut(auth);
+            } else {
+                toggleModal();
+            }
+        });
+        closeBtn.addEventListener('click', toggleModal);
+        authToggle.addEventListener('click', switchAuth);
+
+        // 4. Firebase Auth Execution
+        mainBtn.addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) return alert("Credentials required to manifest.");
+
+            try {
+                if (isLogin) {
+                    // Sign In
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    // Register + Create Firestore Profile
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await setDoc(doc(db, "explorers", userCredential.user.uid), {
+                        email: email,
+                        created: new Date().toISOString()
+                    });
+                }
+                toggleModal();
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+
+        // 5. Auth State Observer
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                authStatusBtn.innerText = "Logout";
+                document.getElementById('app').innerHTML = `<h1>Welcome to the Dimension, ${user.email}</h1>`;
+            } else {
+                authStatusBtn.innerText = "Login";
+                document.getElementById('app').innerHTML = `<h1>Dimension Locked. Please Login.</h1>`;
+            }
+        });
     </script>
-</head>
-<body>
-
-    <header>
-        <div class="btn-wrapper" onclick="toggleModal()">
-            <button class="login-trigger">Login</button>
-        </div>
-    </header>
-
-    <main id="app">
-        </main>
-
-    <div id="login-modal">
-        <div class="auth-card">
-            <span class="close-btn" onclick="toggleModal()">×</span>
-            <div id="auth-content">
-                <h2 id="auth-title">Welcome</h2>
-                
-                <input type="email" placeholder="Email Address" id="email" required>
-                <input type="password" placeholder="Password" id="password" required>
-                
-                <button class="submit-btn" id="main-btn">Enter Dimension</button>
-                
-                <p class="toggle-link" onclick="switchAuth()">
-                    New explorer? <span>Register here</span>
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <script type="module" src="script.js"></script>
-
 </body>
 </html>
