@@ -1,185 +1,263 @@
-    :root {
-            --bg-pure: #000000;
-            --glass-bg: rgba(15, 15, 15, 0.8);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --pink: #ff00ff;
-            --cyan: #00ffff;
-            --text: #ffffff;
-        }
+/* --- VARIABLES & RESET --- */
+:root {
+    --bg-pure: #000000;
+    --glass-bg: rgba(15, 15, 15, 0.8);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --pink: #ff00ff;
+    --cyan: #00ffff;
+    --text: #ffffff;
+    --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
 
-        * { box-sizing: border-box; }
+* { 
+    box-sizing: border-box; 
+}
 
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-pure);
-            color: var(--text);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            overflow-x: hidden;
-        }
-
-        /* --- HEADER & RACING BUTTON --- */
-        header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            height: 60px;
-            z-index: 100;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding: 0 20px;
-        }
-
-        .btn-wrapper {
-            position: relative;
-            width: 130px;
-            height: 42px;
-            padding: 2px;
-            border-radius: 21px;
-            overflow: hidden;
-            cursor: pointer;
-        }
-
-        .btn-wrapper::before {
-            content: '';
-            position: absolute;
-            width: 150%;
-            height: 400%;
-            background: conic-gradient(transparent 0deg, var(--pink) 30deg, transparent 90deg, transparent 180deg, var(--cyan) 210deg, transparent 270deg);
-            animation: rotate 3s linear infinite;
-            top: -150%; left: -25%;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .login-trigger {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            height: 100%;
-            background: var(--glass-bg);
-            color: white;
-            border: none;
-            border-radius: 20px;
-            font-weight: 600;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* --- GAMIFIED LOGIN MODAL --- */
-        #login-modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(15px);
-            display: none; /* Hidden by default */
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            animation: fadeIn 0.4s ease;
-        }
-
-        .auth-card {
-            background: var(--glass-bg);
-            width: 90%;
-            max-width: 400px;
-            padding: 40px;
-            border-radius: 24px;
-            border: 1px solid var(--glass-border);
-            text-align: center;
-            position: relative;
-            box-shadow: 0 0 50px rgba(255, 0, 255, 0.1), 0 0 50px rgba(0, 255, 255, 0.1);
-            transform: translateY(20px);
-            animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-
-        .auth-card h2 {
-            margin-bottom: 30px;
-            font-size: 2rem;
-            background: linear-gradient(to right, var(--pink), var(--cyan));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        input {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            color: white;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        input:focus {
-            border-color: var(--cyan);
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(90deg, var(--pink), var(--cyan));
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: 0.3s;
-        }
-
-        .submit-btn:hover {
-            transform: scale(1.02);
-            filter: brightness(1.2);
-        }
-
-        .toggle-link {
-            margin-top: 20px;
-            font-size: 0.9rem;
-            color: #888;
-            cursor: pointer;
-        }
-
-        .toggle-link span { color: var(--cyan); }
-
-        /* Animations */
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { to { transform: translateY(0); } }
-
-        .close-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            cursor: pointer;
-            font-size: 1.5rem;
-            opacity: 0.5;
-        }
-/* Disable text selection for the whole app */
 body {
-    -webkit-user-select: none; /* Safari */
-    -ms-user-select: none;     /* IE 10 and Consumer Preview */
-    user-select: none;         /* Standard syntax */
-    
-    /* Disables the blue "tap highlight" on mobile devices */
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-pure);
+    color: var(--text);
+    font-family: var(--font-main);
+    overflow-x: hidden;
+    /* Disable text selection for app-like feel */
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Allow selection only in input fields (so users can still type/paste) */
+/* Allow selection only in input fields */
 input, textarea {
     -webkit-user-select: text;
     -ms-user-select: text;
     user-select: text;
+}
+
+/* --- HEADER --- */
+header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    height: 65px;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 20px;
+}
+
+/* --- RACING BORDER BUTTON (Login/Profile) --- */
+.btn-wrapper {
+    position: relative;
+    min-width: 130px;
+    max-width: 220px;
+    height: 42px;
+    padding: 2px; /* Border thickness */
+    border-radius: 21px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.btn-wrapper:active {
+    transform: scale(0.96);
+}
+
+.btn-wrapper::before {
+    content: '';
+    position: absolute;
+    width: 250%;
+    height: 450%;
+    background: conic-gradient(
+        transparent 0deg, 
+        var(--pink) 30deg, 
+        transparent 90deg, 
+        transparent 180deg, 
+        var(--cyan) 210deg, 
+        transparent 270deg
+    );
+    animation: rotate 3s linear infinite;
+    top: -175%; 
+    left: -75%;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.login-trigger {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    background: var(--glass-bg);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 15px;
+}
+
+/* --- PROFILE UI INSIDE BUTTON --- */
+.profile-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.profile-pic {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--cyan);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    object-fit: cover;
+}
+
+.username-display {
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text);
+}
+
+/* --- GAMIFIED LOGIN MODAL --- */
+#login-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(15px);
+    display: none; /* Controlled by JS */
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    animation: fadeIn 0.4s ease;
+}
+
+.auth-card {
+    background: var(--glass-bg);
+    width: 90%;
+    max-width: 400px;
+    padding: 40px;
+    border-radius: 24px;
+    border: 1px solid var(--glass-border);
+    text-align: center;
+    position: relative;
+    box-shadow: 0 0 50px rgba(255, 0, 255, 0.1), 0 0 50px rgba(0, 255, 255, 0.1);
+    transform: translateY(20px);
+    animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.auth-card h2 {
+    margin-bottom: 30px;
+    font-size: 2rem;
+    background: linear-gradient(to right, var(--pink), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* --- INPUTS --- */
+input {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: white;
+    outline: none;
+    transition: 0.3s;
+}
+
+input:focus {
+    border-color: var(--cyan);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+/* --- BUTTONS --- */
+.submit-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(90deg, var(--pink), var(--cyan));
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: 0.3s;
+}
+
+.submit-btn:hover {
+    transform: scale(1.02);
+    filter: brightness(1.2);
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.2);
+}
+
+.submit-btn:active {
+    transform: scale(0.98);
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    cursor: pointer;
+    font-size: 1.5rem;
+    opacity: 0.5;
+    transition: 0.2s;
+}
+
+.close-btn:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+/* --- LINKS --- */
+.toggle-link {
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: #888;
+    cursor: pointer;
+}
+
+.toggle-link span { 
+    color: var(--cyan); 
+    font-weight: 600;
+}
+
+.toggle-link span:hover {
+    text-decoration: underline;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes fadeIn { 
+    from { opacity: 0; } 
+    to { opacity: 1; } 
+}
+
+@keyframes slideUp { 
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; } 
+}
+
+/* --- CONTENT AREA --- */
+#app {
+    padding-top: 100px;
+    text-align: center;
 }
