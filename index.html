@@ -7,6 +7,48 @@
     <title>Dark Glass App</title>
     
     <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* ADD ONLY THESE NEW CLASSES TO YOUR style.css */
+        .profile-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+            width: 100%;
+        }
+
+        .profile-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1.5px solid var(--cyan);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            object-fit: cover;
+        }
+
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            line-height: 1.1;
+        }
+
+        .prof-user {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 0.3px;
+        }
+
+        .prof-tokens {
+            font-size: 0.65rem;
+            color: var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+    </style>
 </head>
 <body>
 
@@ -19,27 +61,20 @@
     <div id="login-modal">
         <div class="auth-card">
             <span class="close-btn" id="close-modal">×</span>
-            <div id="auth-content">
-                <h2 id="auth-title">Welcome</h2>
-                <input type="email" placeholder="Email Address" id="email">
-                <input type="password" placeholder="Password" id="password">
-                <button class="submit-btn" id="main-btn">Enter Dimension</button>
-                <p class="toggle-link" id="switch-btn">New explorer? <span>Register here</span></p>
-            </div>
+            <h2 id="auth-title">Welcome</h2>
+            <input type="email" placeholder="Email" id="email">
+            <input type="password" placeholder="Password" id="password">
+            <button class="submit-btn" id="main-btn">Enter Dimension</button>
+            <p class="toggle-link" id="switch-btn">New explorer? <span>Register here</span></p>
         </div>
     </div>
 
-    <div id="app">
-        <div style="padding-top: 150px; text-align: center;">
-            <h1>Dimension Locked</h1>
-        </div>
-    </div>
+    <div id="app"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        // Import Realtime Database
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
@@ -49,7 +84,7 @@
             storageBucket: "itzhoyoo-f9f7e.filestorage.app",
             messagingSenderId: "1094792075584",
             appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com" // Ensure this matches your RTDB URL
+            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -58,10 +93,8 @@
         const rtdb = getDatabase(app);
 
         const modal = document.getElementById('login-modal');
-        const mainBtn = document.getElementById('main-btn');
         const uiTarget = document.getElementById('ui-target');
         const headerBtnWrap = document.getElementById('header-btn-wrap');
-        
         let isLogin = true;
 
         const toggleModal = () => modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
@@ -70,10 +103,10 @@
         document.getElementById('switch-btn').onclick = () => {
             isLogin = !isLogin;
             document.getElementById('auth-title').innerText = isLogin ? "Welcome" : "Join Us";
-            mainBtn.innerText = isLogin ? "Enter Dimension" : "Create Identity";
+            document.getElementById('main-btn').innerText = isLogin ? "Enter Dimension" : "Create Identity";
         };
 
-        mainBtn.onclick = async () => {
+        document.getElementById('main-btn').onclick = async () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             try {
@@ -82,11 +115,9 @@
                 } else {
                     const res = await createUserWithEmailAndPassword(auth, email, password);
                     const username = email.split('@')[0];
-                    // Save to Firestore
                     await setDoc(doc(db, "explorers", res.user.uid), { username });
-                    // Initialize AITOKENS in Realtime Database
                     await set(ref(rtdb, 'AITOKENS/' + res.user.uid), {
-                        tokens: 100, // Starting bonus
+                        tokens: 100,
                         username: username
                     });
                 }
@@ -94,37 +125,34 @@
             } catch (e) { alert(e.message); }
         };
 
-        // --- REAL-TIME PROFILE UPDATER ---
-        onAuthStateChanged(auth, async (user) => {
+        // --- AUTH OBSERVER ---
+        onAuthStateChanged(auth, (user) => {
             if (user) {
                 const usernameBase = user.email.split('@')[0];
                 const pic = `https://ui-avatars.com/api/?name=${usernameBase}&background=00ffff&color=000000`;
 
-                // Listen to Tokens in Realtime Database
+                // Live Token Listener
                 const tokenRef = ref(rtdb, 'AITOKENS/' + user.uid);
                 onValue(tokenRef, (snapshot) => {
                     const data = snapshot.val();
-                    const tokenCount = data ? data.tokens : 0;
-                    const displayUsername = data ? data.username : usernameBase;
+                    const tokens = data ? data.tokens : 0;
+                    const name = data ? data.username : usernameBase;
 
-                    // Update the header button with the new layout
                     uiTarget.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 12px; text-align: left;">
-                            <img src="${pic}" style="width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid #00ffff;">
-                            <div style="display: flex; flex-direction: column; line-height: 1.2;">
-                                <span style="font-size: 0.85rem; font-weight: 700; color: #fff;">@${displayUsername}</span>
-                                <span style="font-size: 0.7rem; color: #00ffff; font-family: monospace;">${tokenCount} TOKENS</span>
+                        <div class="profile-wrapper">
+                            <img src="${pic}" class="profile-avatar">
+                            <div class="profile-info">
+                                <span class="prof-user">@${name}</span>
+                                <span class="prof-tokens">${tokens} TOKENS</span>
                             </div>
                         </div>
                     `;
                 });
 
-                headerBtnWrap.onclick = () => { if(confirm("Logout?")) signOut(auth); };
-                document.getElementById('app').innerHTML = `<h1>Connected to Grid</h1>`;
+                headerBtnWrap.onclick = () => { if(confirm("Sign out?")) signOut(auth); };
             } else {
                 uiTarget.innerHTML = "Login";
                 headerBtnWrap.onclick = toggleModal;
-                document.getElementById('app').innerHTML = `<h1>Dimension Locked</h1>`;
             }
         });
     </script>
